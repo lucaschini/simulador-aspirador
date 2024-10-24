@@ -4,15 +4,41 @@
 #include <time.h>
 #include <locale.h>
 
-//
+// Por definição
+// 0 = Piso limpo
+// 1 = Piso sujo
+// A = Aspirador
+
+int tamanhoTabuleiro();
+int qtdSujeira(int tamanho);
+int gerarTabuleiro(int tamanho, int qtd_1);
+void printMatriz(int tamanho, int **matriz);
 
 int main() {
 
     setlocale(LC_ALL, "portuguese");
     srand(time(NULL));
 
-    int linhas, qtd_1;
+    int tamanho, qtd_1;
 
+    tamanho = tamanhoTabuleiro();
+    qtd_1 = qtdSujeira(tamanho);
+
+    int matriz = (int *)malloc(tamanho * sizeof(int));
+
+    matriz = gerarTabuleiro(tamanho, qtd_1);
+
+    printMatriz(tamanho, matriz);
+
+
+
+    free(matriz);
+
+    return 0;
+}
+
+int tamanhoTabuleiro(){
+    int linhas;
     printf("Informe a quantidade de linhas matriz: ");
     scanf("%d", &linhas);
 
@@ -20,34 +46,51 @@ int main() {
         printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será 10.");
         linhas = 10;
     }
+    return linhas;
+}
 
-    int total_elementos = linhas * linhas;
-    printf("\n Informe a quantidade de sujeiras (max: %d): ", total_elementos);
-    scanf("%d", &qtd_1);
+int qtdSujeira(int tamanho){
+    int error=0, qtd_sujeira;
+    do{
 
-    if (qtd_1 > total_elementos) {
-        printf("Erro: A quantidade de sujeiras não pode ser maior que o total de elementos da matriz.\n");
-        return 1;
-    }
+        int total_elementos = (tamanho * tamanho);
+        printf("\n Informe a quantidade de sujeiras (max: %d): ", total_elementos);
+        scanf("%d", &qtd_sujeira);
 
-    int **matriz = (int **)malloc(linhas * sizeof(int *));
-    // int matriz = (int *)malloc(linhas * sizeof(int));
-    for (int i = 0; i < linhas; i++) {
-        matriz[i] = (int *)malloc(linhas * sizeof(int));
+        if (qtd_sujeira > total_elementos) {
+            printf("Erro: A quantidade de sujeiras não pode ser maior que o total de elementos da matriz.\n");
+            sleep(2);
+            system("cls");
+        } else {
+            error = 1;
+        }
+    }while(error != 1);
+
+
+    return qtd_sujeira;
+
+}
+
+int gerarTabuleiro(int tamanho, int qtd_1){
+
+    int **matriz = (int **)malloc(tamanho * sizeof(int *));
+    for (int i = 0; i < tamanho; i++) {
+        matriz[i] = (int *)malloc(tamanho * sizeof(int));
     }
     // perguntar pro vinnie
 
-    for (int i = 0; i < linhas; i++) {
-        for (int j = 0; j < linhas; j++) {
+    for (int i = 0; i < tamanho; i++) {
+        for (int j = 0; j < tamanho; j++) {
             matriz[i][j] = 0;
         }
     }
 
+
     // Adiciona os lixos em posições aleatórias
     int colocados = 0;
     while (colocados < qtd_1) {
-        int rand_linha = rand() % linhas;
-        int rand_coluna = rand() % linhas;
+        int rand_linha = rand() % tamanho;
+        int rand_coluna = rand() % tamanho;
 
         // Coloca o 1 na posição se ainda for 0
         if (matriz[rand_linha][rand_coluna] == 0) {
@@ -56,18 +99,18 @@ int main() {
         }
     }
 
-    printf("\nMatriz gerada:\n");
-    for (int i = 0; i < linhas; i++) {
-        for (int j = 0; j < linhas; j++) {
-            printf("%d ", matriz[i][j]);
+    return matriz;
+
+
+}
+
+void printMatriz(int tamanho, int **matriz){
+    printf("\nMatriz gerada:\n\n");
+    for (int i = 0; i < tamanho; i++) {
+        for (int j = 0; j < tamanho; j++) {
+            printf(" %d ", matriz[i][j]);
         }
-        printf("\n");
+            printf("\n");
     }
 
-    for (int i = 0; i < linhas; i++) {
-        free(matriz[i]);
-    }
-    free(matriz);
-
-    return 0;
 }
