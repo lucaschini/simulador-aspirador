@@ -4,6 +4,8 @@
 #include <time.h>
 #include <locale.h>
 
+//
+
 int main() {
 
     setlocale(LC_ALL, "portuguese");
@@ -29,9 +31,11 @@ int main() {
     }
 
     int **matriz = (int **)malloc(linhas * sizeof(int *));
+    // int matriz = (int *)malloc(linhas * sizeof(int));
     for (int i = 0; i < linhas; i++) {
         matriz[i] = (int *)malloc(linhas * sizeof(int));
     }
+    // perguntar pro vinnie
 
     for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < linhas; j++) {
