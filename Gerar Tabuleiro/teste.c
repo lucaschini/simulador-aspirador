@@ -15,14 +15,14 @@
 // A = Aspirador
 // & = Aspirador encima de uma sujeira
 
-int tamanhoTabuleiro();
-int qtdSujeira(int tamanho);
-int gerarTabuleiro(int tamanho, int qtd_1);
-void printMatriz(int tamanho, int **matriz);
-void gerarPosicaoAspirador(int tamanho, int **matriz);
-void localizarAspirador(int **matriz, int tamanho, int *i, int *j);
-int avalia(int **matriz, int tamanho);
-void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho);
+int tamanhoTabuleiro(); //leitura tamanho sala
+int qtdSujeira(int tamanho); //leitura quantidade de sujeiras
+int gerarTabuleiro(int tamanho, int qtd_1); //gera tabuleiro
+void printMatriz(int tamanho, int **matriz); //imprime matriz
+void gerarPosicaoAspirador(int tamanho, int **matriz); //gera aspirador
+void localizarAspirador(int **matriz, int tamanho, int *i, int *j); //localiza aspirador
+int avalia(int **matriz, int tamanho); //avalia se objetivo foi concluido
+void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho); //função sucessora
 //FUNÇÃO COPIAR MATRIZ
 //FUNÇÃO LIMPAR SUJEIRA
 
@@ -59,6 +59,7 @@ int main() {
     return 0;
 }
 
+//DEFININDO QUANTIDADES:
 
 int tamanhoTabuleiro(){
     int linhas;
@@ -94,6 +95,8 @@ int qtdSujeira(int tamanho){
 
 }
 
+//GERANDO:
+
 int gerarTabuleiro(int tamanho, int qtd_1){
 
     int **matriz = (int **)malloc(tamanho * sizeof(int *));
@@ -127,8 +130,22 @@ int gerarTabuleiro(int tamanho, int qtd_1){
 
 }
 
+void gerarPosicaoAspirador(int tamanho, int **matriz) {
+    int x, y;
+
+    x = rand() % tamanho;
+    y = rand() % tamanho;
+    if(matriz[x][y] == 1){
+        matriz[x][y] = 3;
+    }
+    else{
+      matriz[x][y] = 2;
+    }
+}
+
+//IMPRIMINDO MATRIZ:
+
 void printMatriz(int tamanho, int **matriz){
-    printf("\nMatriz gerada:\n\n");
     for (int i = 0; i < tamanho; i++) {
         for (int j = 0; j < tamanho; j++) {
 
@@ -142,21 +159,9 @@ void printMatriz(int tamanho, int **matriz){
         }
             printf("\n");
     }
-
 }
 
-void gerarPosicaoAspirador(int tamanho, int **matriz) {
-    int x, y;
-
-    x = rand() % tamanho;
-    y = rand() % tamanho;
-    if(matriz[x][y] == 1){
-        matriz[x][y] = 3;
-    }
-    else{
-      matriz[x][y] = 2;
-    }
-}
+//LOCALIZANDO ASPIRADOR:
 
 void localizarAspirador(int **matriz, int tamanho, int *i, int *j){
     for(int x = 0; x < tamanho; x++){
@@ -171,6 +176,7 @@ void localizarAspirador(int **matriz, int tamanho, int *i, int *j){
 
 }
 
+//FUNÇÃO SUCESSORA:
 
 void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho){// adicionar matriz como parametro e cópia
     int aux_i, aux_j;
@@ -190,7 +196,6 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho){// adic
         (*j)--;
     }
     else {
-        printf("Movimento inválido!");
         return; // se não for válido
     }
 
@@ -208,6 +213,8 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho){// adic
         matriz[*i][*j] = 3;
     }
 }
+
+//AVALIA OBJETIVO:
 
 int avalia(int **matriz, int tamanho){
     for(int x = 0; x < tamanho; x++){
