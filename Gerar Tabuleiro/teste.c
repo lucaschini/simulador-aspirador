@@ -23,7 +23,8 @@ void gerarPosicaoAspirador(int tamanho, int **matriz);
 void localizarAspirador(int **matriz, int tamanho, int *i, int *j);
 int avalia(int **matriz, int tamanho);
 void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho);
-//FAZER FUNÇÃO COPIAR MATRIZ
+//FUNÇÃO COPIAR MATRIZ
+//FUNÇÃO LIMPAR SUJEIRA
 
 int main() {
 
@@ -46,20 +47,18 @@ int main() {
     localizarAspirador(matriz, tamanho, &pos1, &pos2);
 
     while(retorno != 1){
+        printf("\n\n\n\n\n");
         printMatriz(tamanho, matriz);
+        printf("\n\n\n\n\n");
         tecla = getch();
         sucessora(tecla, &pos1, &pos2, matriz, tamanho);
         retorno = avalia(matriz, tamanho);
+        system("cls");
     }
-
-
-
-
-
-    free(matriz);
 
     return 0;
 }
+
 
 int tamanhoTabuleiro(){
     int linhas;
@@ -135,11 +134,9 @@ void printMatriz(int tamanho, int **matriz){
 
             if(matriz[i][j] == 2){
                 printf(" A ");
-            }
-            else if (matriz[i][j] == 3){
+            } else if (matriz[i][j] == 3){
                 printf(" & ");
-            }
-            else {
+            } else {
                 printf(" %d ", matriz[i][j]);
             }
         }
@@ -164,9 +161,10 @@ void gerarPosicaoAspirador(int tamanho, int **matriz) {
 void localizarAspirador(int **matriz, int tamanho, int *i, int *j){
     for(int x = 0; x < tamanho; x++){
         for(int y = 0; y < tamanho; y++){
-            if(matriz[x][y] == " A " || matriz[x][y] == " & "){
+            if(matriz[x][y] == 2 || matriz[x][y] == 3){
                 *i = x;
                 *j = y;
+                return;
             }
         }
     }
@@ -182,38 +180,39 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho){// adic
     if (movimento == KEY_UP && (*i) > 0) { //fazendo a verificação e alterando a posição
         (*i)--;
     }
-    else if (movimento == KEY_DOWN && (*i) < tamanho) {
+    else if (movimento == KEY_DOWN && (*i) < tamanho - 1) {
         (*i)++;
     }
-    else if (movimento == KEY_RIGHT && (*j) < tamanho) {
+    else if (movimento == KEY_RIGHT && (*j) < tamanho - 1) {
         (*j)++;
     }
     else if (movimento == KEY_LEFT && (*j) > 0) {
         (*j)--;
     }
     else {
+        printf("Movimento inválido!");
         return; // se não for válido
     }
 
-    if(matriz[aux_i][aux_j] ==  " A "){
+    if(matriz[aux_i][aux_j] ==  2){
         matriz[aux_i][aux_j] = 0;
     }
-    else if(matriz[aux_i][aux_j] ==  " & "){
+    else if(matriz[aux_i][aux_j] ==  3){
         matriz[aux_i][aux_j] = 1;
     }
 
     if(matriz[*i][*j] == 0){
-        matriz[*i][*j] =  " A ";
+        matriz[*i][*j] =  2;
     }
     else if(matriz[*i][*j] ==  1){
-        matriz[*i][*j] = " & ";
+        matriz[*i][*j] = 3;
     }
 }
 
 int avalia(int **matriz, int tamanho){
     for(int x = 0; x < tamanho; x++){
         for(int y = 0; y < tamanho; y++){
-            if(matriz[x][y] == 1 || matriz[x][y] == " & ");
+            if(matriz[x][y] == 1 || matriz[x][y] == 3);
             return 0; //OBJETIVO AINDA NÃO FOI ATINGIDO
         }
     }
