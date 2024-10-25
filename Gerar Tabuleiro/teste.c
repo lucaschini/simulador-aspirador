@@ -4,17 +4,26 @@
 #include <time.h>
 #include <locale.h>
 
+#define KEY_UP 72
+#define KEY_DOWN 80
+#define KEY_RIGHT 77
+#define KEY_LEFT 75
+
 // Por definição
 // 0 = Piso limpo
 // 1 = Piso sujo
 // A = Aspirador
-// A* = Aspirador encima de uma sujeira
+// & = Aspirador encima de uma sujeira
 
 int tamanhoTabuleiro();
 int qtdSujeira(int tamanho);
 int gerarTabuleiro(int tamanho, int qtd_1);
 void printMatriz(int tamanho, int **matriz);
 void gerarPosicaoAspirador(int tamanho, int **matriz);
+void localizarAspirador(int **matriz, int tamanho, int *i, int *j);
+int avalia(int **matriz, int tamanho);
+void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho);
+//FAZER FUNÇÃO COPIAR MATRIZ
 
 int main() {
 
@@ -22,6 +31,8 @@ int main() {
     srand(time(NULL));
 
     int tamanho, qtd_1;
+    int pos1, pos2;
+    int retorno = 0, tecla;
 
     tamanho = tamanhoTabuleiro();
     qtd_1 = qtdSujeira(tamanho);
@@ -32,7 +43,16 @@ int main() {
 
     gerarPosicaoAspirador(tamanho, matriz);
 
-    printMatriz(tamanho, matriz);
+    localizarAspirador(matriz, tamanho, &pos1, &pos2);
+
+    while(retorno != 1){
+        printMatriz(tamanho, matriz);
+        tecla = getch();
+        sucessora(tecla, &pos1, &pos2, matriz, tamanho);
+        retorno = avalia(matriz, tamanho);
+    }
+
+
 
 
 
@@ -139,4 +159,63 @@ void gerarPosicaoAspirador(int tamanho, int **matriz) {
     else{
       matriz[x][y] = 2;
     }
+}
+
+void localizarAspirador(int **matriz, int tamanho, int *i, int *j){
+    for(int x = 0; x < tamanho; x++){
+        for(int y = 0; y < tamanho; y++){
+            if(matriz[x][y] == " A " || matriz[x][y] == " & "){
+                *i = x;
+                *j = y;
+            }
+        }
+    }
+
+}
+
+
+void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho){// adicionar matriz como parametro e cópia
+    int aux_i, aux_j;
+    aux_i = *i; //guardando a posição inicial do aspirador
+    aux_j = *j;
+
+    if (movimento == KEY_UP && (*i) > 0) { //fazendo a verificação e alterando a posição
+        (*i)--;
+    }
+    else if (movimento == KEY_DOWN && (*i) < tamanho) {
+        (*i)++;
+    }
+    else if (movimento == KEY_RIGHT && (*j) < tamanho) {
+        (*j)++;
+    }
+    else if (movimento == KEY_LEFT && (*j) > 0) {
+        (*j)--;
+    }
+    else {
+        return; // se não for válido
+    }
+
+    if(matriz[aux_i][aux_j] ==  " A "){
+        matriz[aux_i][aux_j] = 0;
+    }
+    else if(matriz[aux_i][aux_j] ==  " & "){
+        matriz[aux_i][aux_j] = 1;
+    }
+
+    if(matriz[*i][*j] == 0){
+        matriz[*i][*j] =  " A ";
+    }
+    else if(matriz[*i][*j] ==  1){
+        matriz[*i][*j] = " & ";
+    }
+}
+
+int avalia(int **matriz, int tamanho){
+    for(int x = 0; x < tamanho; x++){
+        for(int y = 0; y < tamanho; y++){
+            if(matriz[x][y] == 1 || matriz[x][y] == " & ");
+            return 0; //OBJETIVO AINDA NÃO FOI ATINGIDO
+        }
+    }
+    return 1; //SOLUÇÃO FOI ATINGIDA
 }
