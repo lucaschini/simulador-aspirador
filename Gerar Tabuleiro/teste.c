@@ -9,7 +9,7 @@
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
-// Por definição
+// Por definiï¿½ï¿½o
 // 0 = Piso limpo
 // 1 = Piso sujo
 // A = Aspirador
@@ -22,9 +22,10 @@ void printMatriz(int tamanho, int **matriz); //imprime matriz
 void gerarPosicaoAspirador(int tamanho, int **matriz); //gera aspirador
 void localizarAspirador(int **matriz, int tamanho, int *i, int *j); //localiza aspirador
 int avalia(int **matriz, int tamanho); //avalia se objetivo foi concluido
-void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho); //função sucessora
-//FUNÇÃO COPIAR MATRIZ
-//FUNÇÃO LIMPAR SUJEIRA
+void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho); //funï¿½ï¿½o sucessora
+//FUNï¿½ï¿½O COPIAR MATRIZ
+//FUNï¿½ï¿½O LIMPAR SUJEIRA
+
 
 int main() {
 
@@ -67,7 +68,7 @@ int tamanhoTabuleiro(){
     scanf("%d", &linhas);
 
     if(linhas > 10){
-        printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será 10.");
+        printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor serï¿½ 10.");
         linhas = 10;
     }
     return linhas;
@@ -82,7 +83,7 @@ int qtdSujeira(int tamanho){
         scanf("%d", &qtd_sujeira);
 
         if (qtd_sujeira > total_elementos) {
-            printf("Erro: A quantidade de sujeiras não pode ser maior que o total de elementos da matriz.\n");
+            printf("Erro: A quantidade de sujeiras nï¿½o pode ser maior que o total de elementos da matriz.\n");
             sleep(2);
             system("cls");
         } else {
@@ -112,13 +113,13 @@ int gerarTabuleiro(int tamanho, int qtd_1){
     }
 
 
-    // Adiciona os lixos em posições aleatórias
+    // Adiciona os lixos em posiï¿½ï¿½es aleatï¿½rias
     int colocados = 0;
     while (colocados < qtd_1) {
         int rand_linha = rand() % tamanho;
         int rand_coluna = rand() % tamanho;
 
-        // Coloca o 1 na posição se ainda for 0
+        // Coloca o 1 na posiï¿½ï¿½o se ainda for 0
         if (matriz[rand_linha][rand_coluna] == 0) {
             matriz[rand_linha][rand_coluna] = 1;
             colocados++;
@@ -176,14 +177,14 @@ void localizarAspirador(int **matriz, int tamanho, int *i, int *j){
 
 }
 
-//FUNÇÃO SUCESSORA:
+//FUNï¿½ï¿½O SUCESSORA:
 
-void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho){// adicionar matriz como parametro e cópia
+void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho){// adicionar matriz como parametro e cï¿½pia
     int aux_i, aux_j;
-    aux_i = *i; //guardando a posição inicial do aspirador
+    aux_i = *i; //guardando a posiï¿½ï¿½o inicial do aspirador
     aux_j = *j;
 
-    if (movimento == KEY_UP && (*i) > 0) { //fazendo a verificação e alterando a posição
+    if (movimento == KEY_UP && (*i) > 0) { //fazendo a verificaï¿½ï¿½o e alterando a posiï¿½ï¿½o
         (*i)--;
     }
     else if (movimento == KEY_DOWN && (*i) < tamanho - 1) {
@@ -196,7 +197,7 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho){// adic
         (*j)--;
     }
     else {
-        return; // se não for válido
+        return; // se nï¿½o for vï¿½lido
     }
 
     if(matriz[aux_i][aux_j] ==  2){
@@ -220,8 +221,8 @@ int avalia(int **matriz, int tamanho){
     for(int x = 0; x < tamanho; x++){
         for(int y = 0; y < tamanho; y++){
             if(matriz[x][y] == 1 || matriz[x][y] == 3);
-            return 0; //OBJETIVO AINDA NÃO FOI ATINGIDO
+            return 0; //OBJETIVO AINDA Nï¿½O FOI ATINGIDO
         }
     }
-    return 1; //SOLUÇÃO FOI ATINGIDA
+    return 1; //SOLUï¿½ï¿½O FOI ATINGIDA
 }
