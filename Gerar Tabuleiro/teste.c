@@ -1,6 +1,5 @@
 #include <stdio.h>
-#include <conio.h>
-#include <windows.h>
+#include <stdlib.h>
 #include <time.h>
 #include <locale.h>
 
@@ -8,6 +7,7 @@
 #define KEY_DOWN 80
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
+#define KEY_CLEAN 99
 
 // Por defini��o
 // 0 = Piso limpo
