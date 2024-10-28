@@ -50,7 +50,6 @@ int main() {
 
     while (retorno != 1) {
         copia = copiarMatriz(matriz, tamanho);
-        printMatriz(tamanho, copia);
         printf("\n\n\n\n\n");
         printMatriz(tamanho, matriz);
         printf("\n\n\n\n\n");
