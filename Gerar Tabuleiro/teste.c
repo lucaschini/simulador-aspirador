@@ -8,13 +8,14 @@
 #define KEY_DOWN 80
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
-#define KEY_CLEAN 'l'
+#define KEY_CLEAN 99
 
 // DEFINIÇÕES:
 // 0 = PISO LIMPO
 // 1 = PISO SUJO
-// A = ASPIRADOR EM CIMA DE PISO LIMPO (2)
-// & = ASPIRADOR EM CIMA DE PISO SUJO (3)
+// A = ASPIRADOR EM CIMA DE PISO LIMPO (2) 20
+// & = ASPIRADOR EM CIMA DE PISO SUJO (3) 21
+// C = TECLA PARA LIMPAR
 
 int tamanhoTabuleiro(); //LER TAMANHO DA SALA
 int qtdSujeira(int tamanho); //LER QUANTIDADE SUJEIRAS
@@ -26,7 +27,7 @@ int avalia(int **matriz, int tamanho); //OBJETIVO CONCLUIDO
 void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho); //MOVIMENTACAO
 void limpar(int movimento, int **matriz, int*i, int *j); //LIMPAR SUJEIRA
 void freeMatriz(int **matriz, int tamanho); //LIMPAR MEMORIA ALOCADA
-//FUNCAO COPIAR MATRIZ
+int **copiarMatriz(int **matriz, int tamanho); //FUNCAO COPIAR MATRIZ
 
 int main() {
     setlocale(LC_ALL, "portuguese");
@@ -35,6 +36,7 @@ int main() {
     int tamanho, qtd_1;
     int pos1, pos2;
     int retorno = 0, tecla;
+    int copia;
 
     tamanho = tamanhoTabuleiro();
     qtd_1 = qtdSujeira(tamanho);
@@ -47,6 +49,8 @@ int main() {
     localizarAspirador(matriz, tamanho, &pos1, &pos2);
 
     while (retorno != 1) {
+        copia = copiarMatriz(matriz, tamanho);
+        printMatriz(tamanho, copia);
         printf("\n\n\n\n\n");
         printMatriz(tamanho, matriz);
         printf("\n\n\n\n\n");
@@ -125,18 +129,18 @@ void gerarPosicaoAspirador(int tamanho, int **matriz) {
     x = rand() % tamanho;
     y = rand() % tamanho;
     if (matriz[x][y] == 1) {
-        matriz[x][y] = 3;
+        matriz[x][y] = 21;
     } else {
-        matriz[x][y] = 2;
+        matriz[x][y] = 20;
     }
 }
 
 void printMatriz(int tamanho, int **matriz) {
     for (int i = 0; i < tamanho; i++) {
         for (int j = 0; j < tamanho; j++) {
-            if (matriz[i][j] == 2) {
+            if (matriz[i][j] == 20) {
                 printf(" A ");
-            } else if (matriz[i][j] == 3) {
+            } else if (matriz[i][j] == 21) {
                 printf(" & ");
             } else {
                 printf(" %d ", matriz[i][j]);
@@ -149,7 +153,7 @@ void printMatriz(int tamanho, int **matriz) {
 void localizarAspirador(int **matriz, int tamanho, int *i, int *j) {
     for (int x = 0; x < tamanho; x++) {
         for (int y = 0; y < tamanho; y++) {
-            if (matriz[x][y] == 2 || matriz[x][y] == 3) {
+            if (matriz[x][y] == 20 || matriz[x][y] == 21) {
                 *i = x;
                 *j = y;
                 return;
@@ -175,25 +179,23 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho) {
         return;
     }
 
-    if (matriz[aux_i][aux_j] == 2) {
+    if (matriz[aux_i][aux_j] == 20) {
         matriz[aux_i][aux_j] = 0;
-    } else if (matriz[aux_i][aux_j] == 3) {
+    } else if (matriz[aux_i][aux_j] == 21) {
         matriz[aux_i][aux_j] = 1;
     }
 
     if (matriz[*i][*j] == 0) {
-        matriz[*i][*j] = 2;
+        matriz[*i][*j] = 20;
     } else if (matriz[*i][*j] == 1) {
-        matriz[*i][*j] = 3;
+        matriz[*i][*j] = 21;
     }
 }
 
 void limpar(int movimento, int **matriz, int *i, int *j) {
     if (movimento == KEY_CLEAN) {
-        if (matriz[*i][*j] == 1) {
-            matriz[*i][*j] = 0;
-        } else if (matriz[*i][*j] == 3) {
-            matriz[*i][*j] = 2;
+        if (matriz[*i][*j] == 21) {
+            matriz[*i][*j] = 20;
         }
     }
 }
@@ -201,7 +203,7 @@ void limpar(int movimento, int **matriz, int *i, int *j) {
 int avalia(int **matriz, int tamanho) {
     for (int x = 0; x < tamanho; x++) {
         for (int y = 0; y < tamanho; y++) {
-            if (matriz[x][y] == 1 || matriz[x][y] == 3) {
+            if (matriz[x][y] == 1 || matriz[x][y] == 21) {
                 return 0;
             }
         }
@@ -215,3 +217,15 @@ void freeMatrix(int **matriz, int tamanho) {
     }
     free(matriz);
 }
+
+int **copiarMatriz(int **matriz, int tamanho) {
+    int **novaMatriz = (int **)malloc(tamanho * sizeof(int *));
+    for (int i = 0; i < tamanho; i++) {
+        novaMatriz[i] = (int *)malloc(tamanho * sizeof(int));
+        for (int j = 0; j < tamanho; j++) {
+            novaMatriz[i][j] = matriz[i][j];
+        }
+    }
+    return novaMatriz;
+}
+
