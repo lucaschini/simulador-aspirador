@@ -33,7 +33,7 @@ int main() {
     srand(time(NULL));
 
     int tamanho, qtd_1;
-    int pos1, pos2; //
+    int pos1, pos2;
     int retorno = 0, tecla;
 
     tamanho = tamanhoTabuleiro();
@@ -57,10 +57,10 @@ int main() {
         system("cls");
     }
 
-    freeMatriz(matriz, tamanho);
+    freeMatrix(matriz, tamanho);
     return 0;
+}
 
-//DEFININDO QUANTIDADES:
 
 int tamanhoTabuleiro() {
     int linhas;
@@ -73,7 +73,6 @@ int tamanhoTabuleiro() {
     }
     return linhas;
 }
-
 
 int qtdSujeira(int tamanho) {
     int error = 0, qtd_sujeira;
@@ -93,8 +92,6 @@ int qtdSujeira(int tamanho) {
 
     return qtd_sujeira;
 }
-
-//GERANDO:
 
 int **gerarTabuleiro(int tamanho, int qtd_1) {
     int **matriz = (int **)malloc(tamanho * sizeof(int *));
@@ -134,8 +131,6 @@ void gerarPosicaoAspirador(int tamanho, int **matriz) {
     }
 }
 
-//IMPRIMINDO MATRIZ:
-
 void printMatriz(int tamanho, int **matriz) {
     for (int i = 0; i < tamanho; i++) {
         for (int j = 0; j < tamanho; j++) {
@@ -151,8 +146,6 @@ void printMatriz(int tamanho, int **matriz) {
     }
 }
 
-//LOCALIZANDO ASPIRADOR:
-
 void localizarAspirador(int **matriz, int tamanho, int *i, int *j) {
     for (int x = 0; x < tamanho; x++) {
         for (int y = 0; y < tamanho; y++) {
@@ -164,8 +157,6 @@ void localizarAspirador(int **matriz, int tamanho, int *i, int *j) {
         }
     }
 }
-}
-//FUN��O SUCESSORA:
 
 void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho) {
     int aux_i, aux_j;
@@ -197,27 +188,28 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho) {
     }
 }
 
-void limpar(int movimento, int **matriz, int *i, int *j){
-    if(movimento == "l"){
-        if(matriz[*i][*j] == 1){
+void limpar(int movimento, int **matriz, int *i, int *j) {
+    if (movimento == KEY_CLEAN) {
+        if (matriz[*i][*j] == 1) {
             matriz[*i][*j] = 0;
-        }else if(matriz[*i][*j] == 3){
+        } else if (matriz[*i][*j] == 3) {
             matriz[*i][*j] = 2;
         }
     }
 }
 
-int avalia(int **matriz, int tamanho){
-    for(int x = 0; x < tamanho; x++){
-        for(int y = 0; y < tamanho; y++){
-            if(matriz[x][y] == 1 || matriz[x][y] == 3);
-            return 0; //OBJETIVO AINDA N�O FOI ATINGIDO
+int avalia(int **matriz, int tamanho) {
+    for (int x = 0; x < tamanho; x++) {
+        for (int y = 0; y < tamanho; y++) {
+            if (matriz[x][y] == 1 || matriz[x][y] == 3) {
+                return 0;
+            }
         }
     }
-    return 1; //SOLU��O FOI ATINGIDA
+    return 1;
 }
 
-void freeMatriz(int **matriz, int tamanho) {
+void freeMatrix(int **matriz, int tamanho) {
     for (int i = 0; i < tamanho; i++) {
         free(matriz[i]);
     }
