@@ -8,6 +8,7 @@
 #define KEY_DOWN 80
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
+#define ENTER 13
 
 // Por definição
 // 0 = Piso limpo
@@ -25,6 +26,7 @@ int avalia(int **matriz, int tamanho); //avalia se objetivo foi concluido
 void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho); //funçãoo sucessora
 //FUNÇÃO COPIAR MATRIZ
 //FUNÇÃO LIMPAR SUJEIRA
+void limpa(int tecla, int *i, int *j, int **matriz);
 
 
 int main() {
@@ -54,6 +56,7 @@ int main() {
         tecla = getch();
         sucessora(tecla, &pos1, &pos2, matriz, tamanho);
         retorno = avalia(matriz, tamanho);
+        limpa(tecla, &pos1, &pos2, matriz);
         system("cls");
     }
 
@@ -64,7 +67,7 @@ int main() {
 
 int tamanhoTabuleiro(){
     int linhas;
-    printf("Informe a quantidade de linhas matriz: ");
+    printf(" Informe a quantidade de linhas matriz: ");
     scanf("%d", &linhas);
 
     if(linhas > 10){
@@ -81,10 +84,12 @@ int qtdSujeira(int tamanho){
         int total_elementos = (tamanho * tamanho);
         printf("\n Informe a quantidade de sujeiras (max: %d): ", total_elementos);
         scanf("%d", &qtd_sujeira);
+        sleep(1);
+        system("cls");
 
         if (qtd_sujeira > total_elementos) {
-            printf("Erro: A quantidade de sujeiras não pode ser maior que o total de elementos da matriz.\n");
-            sleep(2);
+            printf("\n Erro: A quantidade de sujeiras não pode ser maior que o total de elementos da matriz.\n");
+            sleep(1);
             system("cls");
         } else {
             error = 1;
@@ -149,14 +154,14 @@ void printMatriz(int tamanho, int **matriz){
     for (int i = 0; i < tamanho; i++) {
         for (int j = 0; j < tamanho; j++) {
             if(matriz[i][j] == 2){
-                printf(" A \t ");
+                printf("\t A");
             } else if (matriz[i][j] == 3){
-                printf(" & \t");
+                printf("\t &");
             } else {
-                printf(" %d \t ", matriz[i][j]);
+                printf("\t %d", matriz[i][j]);
             }
         }
-            printf("\n");
+            printf("\n\n");
     }
 }
 
@@ -223,4 +228,14 @@ int avalia(int **matriz, int tamanho){
         }
     }
     return 1; //SOLU��O FOI ATINGIDA
+}
+
+//LIMPA
+void limpa(int tecla, int *i, int *j, int **matriz){
+    if (matriz[*i][*j] == 3){
+        if (tecla == ENTER){
+            matriz[*i][*j] = 2;
+        }
+    }
+
 }
