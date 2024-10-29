@@ -29,6 +29,8 @@ void limpar(int movimento, int **matriz, int*i, int *j); //LIMPAR SUJEIRA
 void freeMatriz(int **matriz, int tamanho); //LIMPAR MEMORIA ALOCADA
 int **copiarMatriz(int **matriz, int tamanho); //FUNCAO COPIAR MATRIZ
 
+
+
 int main() {
     setlocale(LC_ALL, "portuguese");
     srand(time(NULL));
@@ -57,6 +59,7 @@ int main() {
         sucessora(tecla, &pos1, &pos2, matriz, tamanho);
         limpar(tecla, matriz, &pos1, &pos2);
         retorno = avalia(matriz, tamanho);
+        limpa(tecla, &pos1, &pos2, matriz);
         system("cls");
     }
 
@@ -69,9 +72,9 @@ int tamanhoTabuleiro() {
     int linhas;
     printf(" Informe a quantidade de linhas matriz: ");
     scanf("%d", &linhas);
-
-    if (linhas > 10) {
-        printf("\n A quantidade de Linhas inseridas foi maior que 10, portanto o valor será 10.");
+  
+    if(linhas > 10){
+        printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será 10.\n");
         linhas = 10;
     }
     return linhas;
@@ -83,10 +86,12 @@ int qtdSujeira(int tamanho) {
         int total_elementos = (tamanho * tamanho);
         printf("\n Informe a quantidade de sujeiras (max: %d): ", total_elementos);
         scanf("%d", &qtd_sujeira);
+        sleep(1);
+        system("cls");
 
         if (qtd_sujeira > total_elementos) {
-            printf("Erro: A quantidade de sujeiras não pode ser maior que o total de elementos da matriz.\n");
-            sleep(2);
+            printf("\n Erro: A quantidade de sujeiras não pode ser maior que o total de elementos da matriz.\n");
+            sleep(1);
             system("cls");
         } else {
             error = 1;
@@ -108,11 +113,16 @@ int **gerarTabuleiro(int tamanho, int qtd_1) {
         }
     }
 
+
+
+    // Adiciona os lixos em posições aleatórias
     int colocados = 0;
     while (colocados < qtd_1) {
         int rand_linha = rand() % tamanho;
         int rand_coluna = rand() % tamanho;
 
+
+        // Coloca o 1 na posição se ainda for 0
         if (matriz[rand_linha][rand_coluna] == 0) {
             matriz[rand_linha][rand_coluna] = 1;
             colocados++;
@@ -137,15 +147,16 @@ void gerarPosicaoAspirador(int tamanho, int **matriz) {
 void printMatriz(int tamanho, int **matriz) {
     for (int i = 0; i < tamanho; i++) {
         for (int j = 0; j < tamanho; j++) {
+
             if (matriz[i][j] == 20) {
                 printf(" A ");
             } else if (matriz[i][j] == 21) {
                 printf(" & ");
             } else {
-                printf(" %d ", matriz[i][j]);
+                printf("\t %d", matriz[i][j]);
             }
         }
-        printf("\n");
+            printf("\n\n");
     }
 }
 
@@ -227,4 +238,3 @@ int **copiarMatriz(int **matriz, int tamanho) {
     }
     return novaMatriz;
 }
-
