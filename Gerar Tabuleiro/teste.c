@@ -3,6 +3,7 @@
 #include <time.h>
 #include <locale.h>
 #include <conio.h>
+#include <windows.h>
 
 #define KEY_UP 72
 #define KEY_DOWN 80
@@ -35,6 +36,7 @@ int main() {
     setlocale(LC_ALL, "portuguese");
     srand(time(NULL));
 
+
     int tamanho, qtd_1;
     int pos1, pos2;
     int retorno = 0, tecla;
@@ -59,7 +61,6 @@ int main() {
         sucessora(tecla, &pos1, &pos2, matriz, tamanho);
         limpar(tecla, matriz, &pos1, &pos2);
         retorno = avalia(matriz, tamanho);
-        limpa(tecla, &pos1, &pos2, matriz);
         system("cls");
     }
 
@@ -72,7 +73,7 @@ int tamanhoTabuleiro() {
     int linhas;
     printf(" Informe a quantidade de linhas matriz: ");
     scanf("%d", &linhas);
-  
+
     if(linhas > 10){
         printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será 10.\n");
         linhas = 10;
@@ -145,19 +146,27 @@ void gerarPosicaoAspirador(int tamanho, int **matriz) {
 }
 
 void printMatriz(int tamanho, int **matriz) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     for (int i = 0; i < tamanho; i++) {
         for (int j = 0; j < tamanho; j++) {
 
             if (matriz[i][j] == 20) {
-                printf(" A ");
+
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+                printf("\t A ");
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
             } else if (matriz[i][j] == 21) {
-                printf(" & ");
+                SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE| FOREGROUND_INTENSITY);
+                printf(" \t & ");
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
             } else {
+
                 printf("\t %d", matriz[i][j]);
             }
         }
             printf("\n\n");
     }
+
 }
 
 void localizarAspirador(int **matriz, int tamanho, int *i, int *j) {
