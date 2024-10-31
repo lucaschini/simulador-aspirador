@@ -22,6 +22,12 @@
 // Insertion Sort
 // https://joaoarthurbm.github.io/eda/posts/insertion-sort/
 
+// FUNÇÕES DO MENU
+
+void menu_universo(int *escolha);
+void menu_controladora(int *escolha);
+//  FUNÇÕES BÁSICAS
+
 void tamanhoTabuleiro(int *linhas, int *colunas); //LER TAMANHO DA SALA
 
 int qtdSujeira(int *linhas, int *colunas); //LER QUANTIDADE SUJEIRAS
@@ -47,14 +53,21 @@ int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MAT
 
 
 int main() {
-    setlocale(LC_ALL, "portuguese");
+    setlocale(LC_ALL, "pt_BR.UTF-8");
     srand(time(NULL));
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
 
-
-    int linhas = 0, colunas = 0, qtd_1;
+    int linhas = 0, colunas = 0, qtd_1, escolha, escolha2;
     int pos1, pos2;
     int retorno = 0, tecla;
     int copia;
+
+    menu_universo(&escolha);
+    menu_controladora(&escolha2);
+    system("cls");
+
+    //if()
 
     tamanhoTabuleiro(&linhas, &colunas);
     qtd_1 = qtdSujeira(&linhas, &colunas);
@@ -80,6 +93,68 @@ int main() {
 
     freeMatriz(matriz, &linhas);
     return 0;
+}
+
+void menu_universo(int *escolha) {
+    int tecla = 0;
+    *escolha = 1; //ATRIBUIMOS VALOR A VARIAVEL PARA O MENU COMEÇAR NA PRIMEIRA OPÇÃO
+
+    while (1) {
+        system("cls");
+
+        printf("\n\n\n\t\t\t   ******************* Simulador aspirador ********************\n");
+        printf("\t\t\t   *                  | Selecione a busca |                   *\n");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   * %s Universo Observável                                   *\n", (*escolha == 1) ? "->" : "  ");
+        printf("\t\t\t   * %s Universo Parcialmente observável A                    *\n", (*escolha == 2) ? "->" : "  ");
+        printf("\t\t\t   * %s Universo Parcialmente observável B                    *\n", (*escolha == 3) ? "->" : "  ");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   ************************************************************\n");
+
+        tecla = getch(); //LÊ A TECLA PRESSIONADA
+
+        //NAVEGAÇÃO
+        if (tecla == 72) {
+            if (*escolha > 1) (*escolha)--; //SOBE PARA A POSIÇÃO ANTERIOR
+        } else if (tecla == 80) {
+            if (*escolha < 3) (*escolha)++; //DESCE PARA A PRÓXIMA SEÇÃO
+        } else if (tecla == 27) {
+            return *escolha; //RETORNA O NOVO VALOR DA ESCOLHA
+        } else if (tecla == 13) {
+            return -1; //RETORNA -1 CASO O USUÁRIO DE ESC
+        }
+    }
+}
+
+
+void menu_controladora(int *escolha) {
+    int tecla = 0;
+    *escolha = 1; //ATRIBUIMOS VALOR A VARIAVEL PARA O MENU COMEÇAR NA PRIMEIRA OPÇÃO
+
+    while (1) {
+        system("cls");
+
+        printf("\n\n\n\t\t\t   ******************* Simulador aspirador ********************\n");
+        printf("\t\t\t   *               | Selecione a controladora |               *\n");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   * %s Controladora Manual                                   *\n", (*escolha == 1) ? "->" : "  ");
+        printf("\t\t\t   * %s Controladora por IA                                   *\n", (*escolha == 2) ? "->" : "  ");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   ************************************************************\n");
+
+        tecla = getch(); //LÊ A TECLA PRESSIONADA
+
+        //NAVEGAÇÃO
+        if (tecla == 72) {
+            if (*escolha > 1) (*escolha)--; //SOBE PARA A POSIÇÃO ANTERIOR
+        } else if (tecla == 80) {
+            if (*escolha < 2) (*escolha)++; //DESCE PARA A PRÓXIMA SEÇÃO
+        } else if (tecla == 27) {
+            return *escolha; //RETORNA O NOVO VALOR DA ESCOLHA
+        } else if (tecla == 13) {
+            return -1; //RETORNA -1 CASO O USUÁRIO DE ESC
+        }
+    }
 }
 
 
@@ -174,7 +249,7 @@ void printMatriz(int *linhas, int *colunas, int **matriz) {
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
             } else if (matriz[i][j] == 21) {
                 SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE| FOREGROUND_INTENSITY);
-                printf(" \t & ");
+                printf("\t & ");
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
             } else {
 
