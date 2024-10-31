@@ -18,9 +18,13 @@
 // & = ASPIRADOR EM CIMA DE PISO SUJO (3) 21
 // C = TECLA PARA LIMPAR
 
-int tamanhoTabuleiro(); //LER TAMANHO DA SALA
-int qtdSujeira(int tamanho); //LER QUANTIDADE SUJEIRAS
-int **gerarTabuleiro(int tamanho, int qtd_1); //GERAR TABULEIRO
+// TO SEE: https://www.hashtagtreinamentos.com/como-waze-funciona-python
+// Insertion Sort
+// https://joaoarthurbm.github.io/eda/posts/insertion-sort/
+
+void tamanhoTabuleiro(int *linhas, int *colunas); //LER TAMANHO DA SALA
+int qtdSujeira(int linha, int coluna); //LER QUANTIDADE SUJEIRAS
+int **gerarTabuleiro(int linhas, int colunas, int qtd_1); //GERAR TABULEIRO
 void printMatriz(int tamanho, int **matriz); //IMPRIMIR MATRIZ
 void gerarPosicaoAspirador(int tamanho, int **matriz); //GERAR ASPIRADOR
 void localizarAspirador(int **matriz, int tamanho, int *i, int *j); //LOCALIZAR ASPIRADOR
@@ -37,17 +41,17 @@ int main() {
     srand(time(NULL));
 
 
-    int tamanho, qtd_1;
+    int linhas, colunas, qtd_1;
     int pos1, pos2;
     int retorno = 0, tecla;
     int copia;
 
-    tamanho = tamanhoTabuleiro();
-    qtd_1 = qtdSujeira(tamanho);
+    tamanhoTabuleiro(linhas, colunas);
+    qtd_1 = qtdSujeira(linhas, colunas);
 
     system("cls");
 
-    int **matriz = gerarTabuleiro(tamanho, qtd_1);
+    int **matriz = gerarTabuleiro(linhas, colunas, qtd_1);
 
     gerarPosicaoAspirador(tamanho, matriz);
     localizarAspirador(matriz, tamanho, &pos1, &pos2);
@@ -69,28 +73,30 @@ int main() {
 }
 
 
-int tamanhoTabuleiro() {
-    int linhas;
+void tamanhoTabuleiro(int *linhas, int *colunas) {
     printf(" Informe a quantidade de linhas matriz: ");
     scanf("%d", &linhas);
+    printf(" Informe a quantidade de colunas matriz: ");
+    scanf("%d", &colunas);
 
     if(linhas > 10){
         printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será 10.\n");
-        linhas = 10;
+        *linhas = 10;
+    } else if(colunas > 10){
+        printf("\n A quantidade de Colunas inseridas foi maior que 10, portando o valor será 10.\n");
+        *colunas = 10;
     }
-    return linhas;
 }
 
-int qtdSujeira(int tamanho) {
-    int error = 0, qtd_sujeira;
+int qtdSujeira(int linhas, int colunas) {
+    int error = 0, qtd_sujeira, tamanho = linhas * colunas;
     do {
-        int total_elementos = (tamanho * tamanho);
-        printf("\n Informe a quantidade de sujeiras (max: %d): ", total_elementos);
+        printf("\n Informe a quantidade de sujeiras (max: %d): ", tamanho);
         scanf("%d", &qtd_sujeira);
         sleep(1);
         system("cls");
 
-        if (qtd_sujeira > total_elementos) {
+        if (qtd_sujeira > tamanho) {
             printf("\n Erro: A quantidade de sujeiras não pode ser maior que o total de elementos da matriz.\n");
             sleep(1);
             system("cls");
@@ -102,19 +108,20 @@ int qtdSujeira(int tamanho) {
     return qtd_sujeira;
 }
 
-int **gerarTabuleiro(int tamanho, int qtd_1) {
-    int **matriz = (int **)malloc(tamanho * sizeof(int *));
-    for (int i = 0; i < tamanho; i++) {
-        matriz[i] = (int *)malloc(tamanho * sizeof(int));
+int **gerarTabuleiro(int linhas, int colunas, int qtd_1) {
+    int **matriz = (int **)malloc(linhas * sizeof(int *));
+    for (int i = 0; i < colunas; i++) {
+        matriz[i] = (int *)malloc(colunas * sizeof(int));
     }
 
-    for (int i = 0; i < tamanho; i++) {
-        for (int j = 0; j < tamanho; j++) {
+    for (int i = 0; i < linhas; i++) {
+        for (int j = 0; j < colunas; j++) {
             matriz[i][j] = 0;
         }
     }
 
 
+    int tamanho = linhas * colunas;
 
     // Adiciona os lixos em posições aleatórias
     int colocados = 0;
