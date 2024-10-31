@@ -50,6 +50,9 @@ void freeMatriz(int **matriz, int *linhas); //LIMPAR MEMORIA ALOCADA
 
 int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MATRIZ
 
+//ESTADOS OBSERVÁVEIS
+void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado);
+
 
 
 int main() {
@@ -61,13 +64,11 @@ int main() {
     int linhas = 0, colunas = 0, qtd_1, escolha, escolha2;
     int pos1, pos2;
     int retorno = 0, tecla;
-    int copia;
+    int **visitado;
 
     menu_universo(&escolha);
     menu_controladora(&escolha2);
     system("cls");
-
-    //if()
 
     tamanhoTabuleiro(&linhas, &colunas);
     qtd_1 = qtdSujeira(&linhas, &colunas);
@@ -76,13 +77,20 @@ int main() {
 
     int **matriz = gerarTabuleiro(&linhas, &colunas, qtd_1);
 
+    visitado = (int **)malloc(linhas * sizeof(int *));
+    for (int i = 0; i < linhas; i++) {
+        visitado[i] = (int *)malloc(colunas * sizeof(int));
+        for (int j = 0; j < colunas; j++) {
+            visitado[i][j] = 0;
+        }
+    }
+
     gerarPosicaoAspirador(&linhas, &colunas, matriz);
     localizarAspirador(matriz, &linhas, &colunas, &pos1, &pos2);
 
     while (retorno != 1) {
-        copia = copiarMatriz(matriz, &linhas, &colunas);
         printf("\n\n\n\n\n");
-        printMatriz(&linhas, &colunas, matriz);
+        estado(matriz, &linhas, &colunas, escolha, visitado);
         printf("\n\n\n\n\n");
         tecla = getch();
         sucessora(tecla, &pos1, &pos2, matriz, &linhas, &colunas);
@@ -91,9 +99,15 @@ int main() {
         system("cls");
     }
 
+    for (int i = 0; i < linhas; i++) {
+        free(visitado[i]);
+    }
+    free(visitado);
+
     freeMatriz(matriz, &linhas);
     return 0;
 }
+
 
 void menu_universo(int *escolha) {
     int tecla = 0;
@@ -301,6 +315,7 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *co
     } else if (matriz[*i][*j] == 1) {
         matriz[*i][*j] = 21;
     }
+
 }
 
 void limpar(int movimento, int **matriz, int *i, int *j) {
@@ -339,3 +354,58 @@ int **copiarMatriz(int **matriz, int *linhas, int *colunas) {
     }
     return novaMatriz;
 }
+
+void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    if (escolha == 1) {
+        printMatriz(linhas, colunas, matriz);
+    } else if (escolha == 2) {
+        for (int i = 0; i < *linhas; i++) {
+            for (int j = 0; j < *colunas; j++) {
+                if (matriz[i][j] == 20) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+                    printf("\t A ");
+                    visitado[i][j] = 1;
+                } else if (matriz[i][j] == 21) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                    printf("\t & ");
+                    visitado[i][j] = 1;
+                } else if (visitado[i][j] == 0) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    printf("\t ? ");
+                } else {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                    printf("\t %d", matriz[i][j]);
+                }
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            }
+            printf("\n\n\n\n");
+        }
+    } else if (escolha == 3) {
+        for (int i = 0; i < *linhas; i++) {
+            for (int j = 0; j < *colunas; j++) {
+                if (matriz[i][j] == 20 || matriz[i][j] == 21) {
+                    SetConsoleTextAttribute(hConsole, (matriz[i][j] == 20) ? FOREGROUND_RED | FOREGROUND_INTENSITY : FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                    printf("\t %c ", (matriz[i][j] == 20) ? 'A' : '&');
+
+                    // Marca a célula atual e as adjacentes como visitadas
+                    visitado[i][j] = 1;
+                    if (i + 1 < *linhas) visitado[i + 1][j] = 1;         // Célula abaixo
+                    if (i - 1 >= 0) visitado[i - 1][j] = 1;              // Célula acima
+                    if (j + 1 < *colunas) visitado[i][j + 1] = 1;        // Célula à direita
+                    if (j - 1 >= 0) visitado[i][j - 1] = 1;              // Célula à esquerda
+                } else if (visitado[i][j] == 0) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    printf("\t ? ");
+                } else {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                    printf("\t %d", matriz[i][j]);
+                }
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            }
+            printf("\n\n\n\n");
+        }
+    }
+}
+
