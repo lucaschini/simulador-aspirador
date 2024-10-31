@@ -23,16 +23,26 @@
 // https://joaoarthurbm.github.io/eda/posts/insertion-sort/
 
 void tamanhoTabuleiro(int *linhas, int *colunas); //LER TAMANHO DA SALA
-int qtdSujeira(int linha, int coluna); //LER QUANTIDADE SUJEIRAS
-int **gerarTabuleiro(int linhas, int colunas, int qtd_1); //GERAR TABULEIRO
-void printMatriz(int tamanho, int **matriz); //IMPRIMIR MATRIZ
-void gerarPosicaoAspirador(int tamanho, int **matriz); //GERAR ASPIRADOR
-void localizarAspirador(int **matriz, int tamanho, int *i, int *j); //LOCALIZAR ASPIRADOR
-int avalia(int **matriz, int tamanho); //OBJETIVO CONCLUIDO
-void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho); //MOVIMENTACAO
+
+int qtdSujeira(int *linhas, int *colunas); //LER QUANTIDADE SUJEIRAS
+
+int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1); //GERAR TABULEIRO
+
+void printMatriz(int *linhas, int *colunas, int **matriz); //IMPRIMIR MATRIZ
+
+void gerarPosicaoAspirador(int *linhas, int *colunas, int **matriz); //GERAR ASPIRADOR
+
+void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j); //LOCALIZAR ASPIRADOR
+
+int avalia(int **matriz, int *linhas, int *colunas); //OBJETIVO CONCLUIDO
+
+void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas); //MOVIMENTACAO
+
 void limpar(int movimento, int **matriz, int*i, int *j); //LIMPAR SUJEIRA
-void freeMatriz(int **matriz, int tamanho); //LIMPAR MEMORIA ALOCADA
-int **copiarMatriz(int **matriz, int tamanho); //FUNCAO COPIAR MATRIZ
+
+void freeMatriz(int **matriz, int *linhas); //LIMPAR MEMORIA ALOCADA
+
+int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MATRIZ
 
 
 
@@ -41,55 +51,56 @@ int main() {
     srand(time(NULL));
 
 
-    int linhas, colunas, qtd_1;
+    int linhas = 0, colunas = 0, qtd_1;
     int pos1, pos2;
     int retorno = 0, tecla;
     int copia;
 
-    tamanhoTabuleiro(linhas, colunas);
-    qtd_1 = qtdSujeira(linhas, colunas);
+    tamanhoTabuleiro(&linhas, &colunas);
+    qtd_1 = qtdSujeira(&linhas, &colunas);
 
     system("cls");
 
-    int **matriz = gerarTabuleiro(linhas, colunas, qtd_1);
+    int **matriz = gerarTabuleiro(&linhas, &colunas, qtd_1);
 
-    gerarPosicaoAspirador(tamanho, matriz);
-    localizarAspirador(matriz, tamanho, &pos1, &pos2);
+    gerarPosicaoAspirador(&linhas, &colunas, matriz);
+    localizarAspirador(matriz, &linhas, &colunas, &pos1, &pos2);
 
     while (retorno != 1) {
-        copia = copiarMatriz(matriz, tamanho);
+        copia = copiarMatriz(matriz, &linhas, &colunas);
         printf("\n\n\n\n\n");
-        printMatriz(tamanho, matriz);
+        printMatriz(&linhas, &colunas, matriz);
         printf("\n\n\n\n\n");
         tecla = getch();
-        sucessora(tecla, &pos1, &pos2, matriz, tamanho);
+        sucessora(tecla, &pos1, &pos2, matriz, &linhas, &colunas);
         limpar(tecla, matriz, &pos1, &pos2);
-        retorno = avalia(matriz, tamanho);
+        retorno = avalia(matriz, &linhas, &colunas);
         system("cls");
     }
 
-    freeMatrix(matriz, tamanho);
+    freeMatriz(matriz, &linhas);
     return 0;
 }
 
 
 void tamanhoTabuleiro(int *linhas, int *colunas) {
     printf(" Informe a quantidade de linhas matriz: ");
-    scanf("%d", &linhas);
+    scanf("%d",linhas);
     printf(" Informe a quantidade de colunas matriz: ");
-    scanf("%d", &colunas);
+    scanf("%d",colunas);
 
-    if(linhas > 10){
+    if(*linhas > 10){
         printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será 10.\n");
         *linhas = 10;
-    } else if(colunas > 10){
+    } else if(*colunas > 10){
         printf("\n A quantidade de Colunas inseridas foi maior que 10, portando o valor será 10.\n");
         *colunas = 10;
     }
 }
 
-int qtdSujeira(int linhas, int colunas) {
-    int error = 0, qtd_sujeira, tamanho = linhas * colunas;
+int qtdSujeira(int *linhas, int *colunas) {
+    int error = 0, qtd_sujeira, tamanho = 0;
+    tamanho = (*linhas) * (*colunas);
     do {
         printf("\n Informe a quantidade de sujeiras (max: %d): ", tamanho);
         scanf("%d", &qtd_sujeira);
@@ -108,26 +119,25 @@ int qtdSujeira(int linhas, int colunas) {
     return qtd_sujeira;
 }
 
-int **gerarTabuleiro(int linhas, int colunas, int qtd_1) {
-    int **matriz = (int **)malloc(linhas * sizeof(int *));
-    for (int i = 0; i < colunas; i++) {
-        matriz[i] = (int *)malloc(colunas * sizeof(int));
+int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1) {
+    int **matriz = (int **)malloc(*linhas * sizeof(int *));
+    for (int i = 0; i < *linhas; i++) {
+        matriz[i] = (int *)malloc(*colunas * sizeof(int));
     }
 
-    for (int i = 0; i < linhas; i++) {
-        for (int j = 0; j < colunas; j++) {
+    for (int i = 0; i < *linhas; i++) {
+        for (int j = 0; j < *colunas; j++) {
             matriz[i][j] = 0;
         }
     }
 
 
-    int tamanho = linhas * colunas;
 
     // Adiciona os lixos em posições aleatórias
     int colocados = 0;
     while (colocados < qtd_1) {
-        int rand_linha = rand() % tamanho;
-        int rand_coluna = rand() % tamanho;
+        int rand_linha = rand() % (*linhas);
+        int rand_coluna = rand() % (*colunas);
 
 
         // Coloca o 1 na posição se ainda for 0
@@ -140,11 +150,11 @@ int **gerarTabuleiro(int linhas, int colunas, int qtd_1) {
     return matriz;
 }
 
-void gerarPosicaoAspirador(int tamanho, int **matriz) {
+void gerarPosicaoAspirador(int *linhas, int *colunas, int **matriz) {
     int x, y;
 
-    x = rand() % tamanho;
-    y = rand() % tamanho;
+    x = rand() % *linhas;
+    y = rand() % *colunas;
     if (matriz[x][y] == 1) {
         matriz[x][y] = 21;
     } else {
@@ -152,10 +162,10 @@ void gerarPosicaoAspirador(int tamanho, int **matriz) {
     }
 }
 
-void printMatriz(int tamanho, int **matriz) {
+void printMatriz(int *linhas, int *colunas, int **matriz) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    for (int i = 0; i < tamanho; i++) {
-        for (int j = 0; j < tamanho; j++) {
+    for (int i = 0; i < *linhas; i++) {
+        for (int j = 0; j < *colunas; j++) {
 
             if (matriz[i][j] == 20) {
 
@@ -171,14 +181,14 @@ void printMatriz(int tamanho, int **matriz) {
                 printf("\t %d", matriz[i][j]);
             }
         }
-            printf("\n\n");
+            printf("\n\n\n\n");
     }
 
 }
 
-void localizarAspirador(int **matriz, int tamanho, int *i, int *j) {
-    for (int x = 0; x < tamanho; x++) {
-        for (int y = 0; y < tamanho; y++) {
+void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j) {
+    for (int x = 0; x < *linhas; x++) {
+        for (int y = 0; y < *colunas; y++) {
             if (matriz[x][y] == 20 || matriz[x][y] == 21) {
                 *i = x;
                 *j = y;
@@ -188,16 +198,16 @@ void localizarAspirador(int **matriz, int tamanho, int *i, int *j) {
     }
 }
 
-void sucessora(int movimento, int *i, int *j, int **matriz, int tamanho) {
+void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas) {
     int aux_i, aux_j;
     aux_i = *i;
     aux_j = *j;
 
     if (movimento == KEY_UP && (*i) > 0) {
         (*i)--;
-    } else if (movimento == KEY_DOWN && (*i) < tamanho - 1) {
+    } else if (movimento == KEY_DOWN && (*i) < *linhas - 1) {
         (*i)++;
-    } else if (movimento == KEY_RIGHT && (*j) < tamanho - 1) {
+    } else if (movimento == KEY_RIGHT && (*j) < *colunas - 1) {
         (*j)++;
     } else if (movimento == KEY_LEFT && (*j) > 0) {
         (*j)--;
@@ -226,9 +236,9 @@ void limpar(int movimento, int **matriz, int *i, int *j) {
     }
 }
 
-int avalia(int **matriz, int tamanho) {
-    for (int x = 0; x < tamanho; x++) {
-        for (int y = 0; y < tamanho; y++) {
+int avalia(int **matriz, int *linhas, int *colunas) {
+    for (int x = 0; x < *linhas; x++) {
+        for (int y = 0; y < *colunas; y++) {
             if (matriz[x][y] == 1 || matriz[x][y] == 21) {
                 return 0;
             }
@@ -237,18 +247,18 @@ int avalia(int **matriz, int tamanho) {
     return 1;
 }
 
-void freeMatrix(int **matriz, int tamanho) {
-    for (int i = 0; i < tamanho; i++) {
+void freeMatriz(int **matriz, int *linhas) {
+    for (int i = 0; i < *linhas; i++) {
         free(matriz[i]);
     }
     free(matriz);
 }
 
-int **copiarMatriz(int **matriz, int tamanho) {
-    int **novaMatriz = (int **)malloc(tamanho * sizeof(int *));
-    for (int i = 0; i < tamanho; i++) {
-        novaMatriz[i] = (int *)malloc(tamanho * sizeof(int));
-        for (int j = 0; j < tamanho; j++) {
+int **copiarMatriz(int **matriz, int *linhas, int *colunas) {
+    int **novaMatriz = (int **)malloc(*linhas * sizeof(int *));
+    for (int i = 0; i < *linhas; i++) {
+        novaMatriz[i] = (int *)malloc(*colunas * sizeof(int));
+        for (int j = 0; j < *colunas; j++) {
             novaMatriz[i][j] = matriz[i][j];
         }
     }
