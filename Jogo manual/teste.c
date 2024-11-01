@@ -43,6 +43,7 @@ void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j)
 int avalia(int **matriz, int *linhas, int *colunas); //OBJETIVO CONCLUIDO
 
 void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas); //MOVIMENTACAO
+void sucessoraIA_B(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas, int **visitado);
 
 void limpar(int movimento, int **matriz, int*i, int *j); //LIMPAR SUJEIRA
 
@@ -64,7 +65,7 @@ int main() {
     int linhas = 0, colunas = 0, qtd_1, escolha, escolha2;
     int pos1, pos2;
     int retorno = 0, tecla;
-    int **visitado;
+    int **visitado = NULL;
 
     menu_universo(&escolha);
     menu_controladora(&escolha2);
@@ -84,16 +85,24 @@ int main() {
             visitado[i][j] = 0;
         }
     }
+    if (visitado == NULL){
+        printf("Alocação deu ruim");
+    }
 
     gerarPosicaoAspirador(&linhas, &colunas, matriz);
     localizarAspirador(matriz, &linhas, &colunas, &pos1, &pos2);
-
+    estado(matriz, &linhas, &colunas, escolha, visitado);
+    system("cls");
     while (retorno != 1) {
         printf("\n\n\n\n\n");
         estado(matriz, &linhas, &colunas, escolha, visitado);
         printf("\n\n\n\n\n");
         tecla = getch();
-        sucessora(tecla, &pos1, &pos2, matriz, &linhas, &colunas);
+        if(escolha == 3){
+            sucessoraIA_B(tecla, &pos1, &pos2, matriz, &linhas, &colunas, visitado);
+        }else{
+            sucessora(tecla, &pos1, &pos2, matriz, &linhas, &colunas);
+        }
         limpar(tecla, matriz, &pos1, &pos2);
         retorno = avalia(matriz, &linhas, &colunas);
         system("cls");
@@ -314,6 +323,45 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *co
         matriz[*i][*j] = 20;
     } else if (matriz[*i][*j] == 1) {
         matriz[*i][*j] = 21;
+    }
+
+}
+
+void sucessoraIA_B(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas, int **visitado) {
+    int aux_i, aux_j;
+    aux_i = *i;
+    aux_j = *j;
+
+    if (movimento == KEY_UP && (*i) > 0) {
+        (*i)--;
+    } else if (movimento == KEY_DOWN && (*i) < *linhas - 1) {
+        (*i)++;
+    } else if (movimento == KEY_RIGHT && (*j) < *colunas - 1) {
+        (*j)++;
+    } else if (movimento == KEY_LEFT && (*j) > 0) {
+        (*j)--;
+    } else {
+        return;
+    }
+
+    if (matriz[aux_i][aux_j] == 20) {
+        matriz[aux_i][aux_j] = 0;
+    } else if (matriz[aux_i][aux_j] == 21) {
+        matriz[aux_i][aux_j] = 1;
+    }
+
+    if (matriz[*i][*j] == 0) {
+        matriz[*i][*j] = 20;
+        if (*i + 1 < *linhas) visitado[*i + 1][*j] = 1;         // Célula abaixo
+        if (*i - 1 >= 0) visitado[*i - 1][*j] = 1;              // Célula acima
+        if (*j + 1 < *colunas) visitado[*i][*j + 1] = 1;        // Célula à direita
+        if (*j - 1 >= 0) visitado[*i][*j - 1] = 1;              // Célula à esquerda
+    } else if (matriz[*i][*j] == 1) {
+        matriz[*i][*j] = 21;
+        if (*i + 1 < *linhas) visitado[*i + 1][*j] = 1;         // Célula abaixo
+        if (*i - 1 >= 0) visitado[*i - 1][*j] = 1;              // Célula acima
+        if (*j + 1 < *colunas) visitado[*i][*j + 1] = 1;        // Célula à direita
+        if (*j - 1 >= 0) visitado[*i][*j - 1] = 1;              // Célula à esquerda
     }
 
 }
