@@ -61,7 +61,7 @@ int main() {
     int linhas = 0, colunas = 0, qtd_1, escolha, escolha2;
     int pos1, pos2;
     int retorno = 0, tecla;
-    int copia;
+    int **  copia;
 
     menu_universo(&escolha);
     menu_controladora(&escolha2);
@@ -165,11 +165,11 @@ void tamanhoTabuleiro(int *linhas, int *colunas) {
     scanf("%d",colunas);
 
     if(*linhas > 10){
-        printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será 10.\n");
         *linhas = 10;
-    } else if(*colunas > 10){
-        printf("\n A quantidade de Colunas inseridas foi maior que 10, portando o valor será 10.\n");
+        printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será %d.\n", *linhas);
+    } if(*colunas > 10){
         *colunas = 10;
+        printf("\n A quantidade de Colunas inseridas foi maior que 10, portando o valor será %d.\n", *colunas);
     }
 }
 
@@ -339,3 +339,5 @@ int **copiarMatriz(int **matriz, int *linhas, int *colunas) {
     }
     return novaMatriz;
 }
+
+//void IA_B(int **matriz, int *i, int *j)
