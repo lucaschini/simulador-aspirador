@@ -199,6 +199,9 @@ void tamanhoTabuleiro(int *linhas, int *colunas) {
     if(*linhas > 10){
         printf("\n A quantidade de Linhas inseridas foi maior que 10, portando o valor será 10.\n");
         *linhas = 10;
+    }else if(*linhas < 1){
+        printf("\n A quantidade de Linhas inseridas foi menor que 1, portando o valor será 1.\n");
+        *linhas = 1;
     }
 
     printf("\n Informe a quantidade de colunas matriz: ");
@@ -206,6 +209,9 @@ void tamanhoTabuleiro(int *linhas, int *colunas) {
     if(*colunas > 10){
         printf("\n A quantidade de Colunas inseridas foi maior que 10, portando o valor será 10.\n");
         *colunas = 10;
+    }else if(*colunas < 1){
+        printf("\n A quantidade de Colunas inseridas foi menor que 1, portando o valor será 1.\n");
+        *colunas = 1;
     }
 }
 
