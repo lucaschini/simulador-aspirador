@@ -44,15 +44,15 @@ void printMatriz(int *linhas, int *colunas, int **matriz, int escolha, int **vis
 void gerarPosicaoAspirador(int *linhas, int *colunas, int **matriz); //GERAR ASPIRADOR
 void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j); //LOCALIZAR ASPIRADOR
 int avalia(int **matriz, int *linhas, int *colunas); //OBJETIVO CONCLUIDO
-void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas, int mov); //MOVIMENTACAO
-void limpar(int movimento, int **matriz, int*i, int *j, int ia); //LIMPAR SUJEIRA
+void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas); //MOVIMENTACAO
+void limpar(int movimento, int **matriz, int*i, int *j); //LIMPAR SUJEIRA
 void freeMatriz(int **matriz, int *linhas); //LIMPAR MEMORIA ALOCADA
 void freeVisitado(int **visitados, int *linhas);//LIMPA MEMORIA ALOCADA
 int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MATRIZ
 void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado);
 
 //TESTE IA:
-//void po_dfs(int **matriz, int *linhas, int *colunas,int *i, int *j, int ia, int mov, int **visitado);
+void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int suj);
 
 
 
@@ -62,7 +62,7 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
-    int linhas = 0, colunas = 0, qtd_1, escolha, escolha2, ia = 0, mov = 0;
+    int linhas = 0, colunas = 0, qtd_1, escolha, escolha2;
     int pos1, pos2;
     int retorno = 0, tecla;
     int **visitado;
@@ -95,14 +95,14 @@ int main() {
 
     //CASO SEJA MANUAL
     if(escolha2 == 1){
-        while (retorno != 1) {
+        while(retorno!= 1){
             printf("\n\n\n\n\n");
             estado(matriz, &linhas, &colunas, escolha, visitado); //GERA O ESTADO
             printMatriz(&linhas, &colunas, matriz, escolha, visitado); //PRINTA O ESTADO
             printf("\n\n\n\n\n");
             tecla = getch(); //PEGA A TECLA
-            sucessora(tecla, &pos1, &pos2, matriz, &linhas, &colunas, mov); //LE OS MOVIMENTOS
-            limpar(tecla, matriz, &pos1, &pos2, ia); //FAZ A LIMPEZA MANUAL
+            sucessora(tecla, &pos1, &pos2, matriz, &linhas, &colunas); //LE OS MOVIMENTOS
+            limpar(tecla, matriz, &pos1, &pos2); //FAZ A LIMPEZA MANUAL
             retorno = avalia(matriz, &linhas, &colunas); //FUNÇÃO OBJETIVO
             system("cls");
         }
@@ -113,8 +113,10 @@ int main() {
         if(escolha == 1){
             //OBSERVÁVEL
 
-        }else if(escolha == 2){
-            //PARCIAL A
+        }else if (escolha == 2) {
+            po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, qtd_1);
+            system("cls");
+            printf("\n Sala Limpa! \n");
         }else if(escolha == 3){
             //PARCIAL B
         }
@@ -313,18 +315,18 @@ void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j)
     }
 }
 
-void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas, int mov) {
+void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas) {
     int aux_i, aux_j;
     aux_i = *i;
     aux_j = *j;
 
-    if ((movimento == KEY_UP || mov == 1) && (*i) > 0) {
+    if ((movimento == KEY_UP) && (*i) > 0) {
         (*i)--;
-    } else if ((movimento == KEY_DOWN || mov == 2) && (*i) < *linhas - 1) {
+    } else if ((movimento == KEY_DOWN) && (*i) < *linhas - 1) {
         (*i)++;
-    } else if ((movimento == KEY_RIGHT || mov == 4) && (*j) < *colunas - 1) {
+    } else if ((movimento == KEY_RIGHT) && (*j) < *colunas - 1) {
         (*j)++;
-    } else if ((movimento == KEY_LEFT || mov == 3) && (*j) > 0) {
+    } else if ((movimento == KEY_LEFT) && (*j) > 0) {
         (*j)--;
     } else {
         return;
@@ -344,8 +346,8 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *co
 
 }
 
-void limpar(int movimento, int **matriz, int *i, int *j, int ia) {
-    if (movimento == KEY_CLEAN || ia == 1) {
+void limpar(int movimento, int **matriz, int *i, int *j) {
+    if (movimento == KEY_CLEAN) {
         if (matriz[*i][*j] == 21) {
             matriz[*i][*j] = 20;
         }
@@ -422,4 +424,60 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
     }
 }
 
+void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int suj) {
+
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    system("cls");
+    estado(matriz, linhas, colunas, 2, visitado);
+    printMatriz(linhas, colunas, matriz, 2, visitado);
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    printf("\n\n\t Quantidade de sujeiras: %d", suj);
+    sleep(1);
+
+    // Marca a célula atual como visitada
+    visitado[*i][*j] = 1;
+
+    // Limpa a sujeira na posição atual, se houver
+    sleep(1);
+    if(matriz[*i][*j] == 21){
+        limpar(KEY_CLEAN, matriz, i, j);
+        suj --;
+    }
+
+    // Vetores de direção para cima, baixo, esquerda e direita
+    int mov_x[] = {-1, 1, 0, 0};
+    int mov_y[] = {0, 0, -1, 1};
+
+    // Percorre todas as direções possíveis
+    for (int d = 0; d < 4; d++) {
+        int novo_i = *i + mov_x[d];
+        int novo_j = *j + mov_y[d];
+
+        // Verifica se a nova posição está dentro dos limites e ainda não foi visitada
+        if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas && visitado[novo_i][novo_j] == 0) {
+            // Redefine a posição atual como limpa antes de mover para a próxima célula
+            matriz[*i][*j] = 0;
+
+            // Move o aspirador para a nova posição
+            *i = novo_i;
+            *j = novo_j;
+
+            // Atualiza a posição do aspirador na nova célula
+            if(matriz[*i][*j] == 0){matriz[*i][*j] = 20;}
+            if(matriz[*i][*j] == 1){matriz[*i][*j] = 21;}
+
+            // Chama a função recursivamente para a nova posição
+            po_dfs(matriz, linhas, colunas, i, j, visitado, suj);
+
+            // Retorna à posição anterior após explorar o caminho, redefinindo a posição atual
+            matriz[*i][*j] = 0;
+            *i -= mov_x[d];
+            *j -= mov_y[d];
+
+            // Recoloca o aspirador na célula anterior após o retorno
+            matriz[*i][*j] = 20;
+        }
+    }
+}
 
