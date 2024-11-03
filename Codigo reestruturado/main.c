@@ -30,6 +30,14 @@
 // TO SEE: https://www.hashtagtreinamentos.com/como-waze-funciona-python
 // Insertion Sort
 // https://joaoarthurbm.github.io/eda/posts/insertion-sort/
+//https://github.com/malufreitas/a-estrela/blob/master/main.py
+//https://wagnergaspar.com/como-implementar-a-estrutura-de-dados-fila-de-prioridade-em-c/
+//https://www.youtube.com/watch?v=ECdLOLaIVx8
+
+typedef struct pos{
+    int x;
+    int y;
+} pos;
 
 // FUNÇÕES DO MENU
 void menu_universo(int *escolha);
@@ -39,7 +47,7 @@ void menu_controladora(int *escolha);
 
 void tamanhoTabuleiro(int *linhas, int *colunas); //LER TAMANHO DA SALA
 int qtdSujeira(int *linhas, int *colunas); //LER QUANTIDADE SUJEIRAS
-int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1); //GERAR TABULEIRO
+int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1, pos *vPosicoes); //GERAR TABULEIRO
 void printMatriz(int *linhas, int *colunas, int **matriz, int escolha, int **visitado); //IMPRIMIR MATRIZ
 void gerarPosicaoAspirador(int *linhas, int *colunas, int **matriz); //GERAR ASPIRADOR
 void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j); //LOCALIZAR ASPIRADOR
@@ -54,18 +62,20 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
 //TESTE IA:
 //void po_dfs(int **matriz, int *linhas, int *colunas,int *i, int *j, int ia, int mov, int **visitado);
 
-
+// FUNÇÕES PARA IA DO UNIVERSO OBSERVÁVEL:
+int distancia_manhattan(pos atual, pos objetivo);
 
 int main() {
     setlocale(LC_ALL, "pt_BR.UTF-8"); //PARA LIBERAR ACENTUAÇÃO
     srand(time(NULL)); //PARA GERAR CASAS ALEATÓRIAS
-    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleOutputCP(CP_UTF8); // PARA COR DO ASPIRADOR MUDAR NO CONSOLE
     SetConsoleCP(CP_UTF8);
 
     int linhas = 0, colunas = 0, qtd_1, escolha, escolha2, ia = 0, mov = 0;
     int pos1, pos2;
     int retorno = 0, tecla;
     int **visitado;
+
 
     //GERA OS MENUS
     menu_universo(&escolha);
@@ -75,10 +85,18 @@ int main() {
     //GERA AS DIMENSÕES E SUJEIRAS DO TABULEIRO
     tamanhoTabuleiro(&linhas, &colunas);
     qtd_1 = qtdSujeira(&linhas, &colunas);
+    pos *vPosicoes = (pos *)malloc(qtd_1 * sizeof(pos));
+
     system("cls");
 
+
     //GERA O TABULEIRO
-    int **matriz = gerarTabuleiro(&linhas, &colunas, qtd_1);
+    int **matriz = gerarTabuleiro(&linhas, &colunas, qtd_1, vPosicoes);
+
+    for(int i = 0; i < qtd_1; i++) {
+        printf("Sujeira %d: (%d, %d)\n", i, vPosicoes[i].x, vPosicoes[i].y);
+    }
+
 
     //ALOCA MEMÓRIA PARA O VISITADO
     visitado = (int **)malloc(linhas * sizeof(int *));
@@ -93,9 +111,20 @@ int main() {
     gerarPosicaoAspirador(&linhas, &colunas, matriz);
     localizarAspirador(matriz, &linhas, &colunas, &pos1, &pos2);
 
+    pos posicoes_aspirador;
+    posicoes_aspirador.x = pos1;
+    posicoes_aspirador.y = pos2;
+
+    for(int i = 0; i < qtd_1; i++) {
+        pos posicoes_objetivo;
+        posicoes_objetivo.x = vPosicoes[i].x;
+        posicoes_objetivo.y = vPosicoes[i].y;
+        printf("Distancia da sujeira %d: %d\n", i+1, distancia_manhattan(posicoes_aspirador, posicoes_objetivo));
+    }
     //CASO SEJA MANUAL
     if(escolha2 == 1){
         while (retorno != 1) {
+
             printf("\n\n\n\n\n");
             estado(matriz, &linhas, &colunas, escolha, visitado); //GERA O ESTADO
             printMatriz(&linhas, &colunas, matriz, escolha, visitado); //PRINTA O ESTADO
@@ -112,6 +141,11 @@ int main() {
     if(escolha2 == 2){
         if(escolha == 1){
             //OBSERVÁVEL
+            // eu posso calcular qual o ponto mais perto pro mais longo e ordernar eles na lista de prioridade, caso list!=NULL continuo adicionando a movimentação necessaria no array de caminhos
+            // funções: calcular_distancia, percurso
+
+
+
 
         }else if(escolha == 2){
             //PARCIAL A
@@ -126,6 +160,7 @@ int main() {
 
     //LIBERA A MEMORIA DA MATRIZ
     freeMatriz(matriz, &linhas);
+    free(vPosicoes);
     return 0;
 }
 
@@ -236,7 +271,7 @@ int qtdSujeira(int *linhas, int *colunas) {
     return qtd_sujeira;
 }
 
-int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1) {
+int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1, pos *vPosicoes) {
     int **matriz = (int **)malloc(*linhas * sizeof(int *));
     for (int i = 0; i < *linhas; i++) {
         matriz[i] = (int *)malloc(*colunas * sizeof(int));
@@ -249,16 +284,17 @@ int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1) {
     }
 
     // Adiciona os lixos em posições aleatórias
-    int colocados = 0;
-    while (colocados < qtd_1) {
+    for(int i=0; i<qtd_1; i++){
         int rand_linha = rand() % (*linhas);
         int rand_coluna = rand() % (*colunas);
+
 
 
         // Coloca o 1 na posição se ainda for 0
         if (matriz[rand_linha][rand_coluna] == 0) {
             matriz[rand_linha][rand_coluna] = 1;
-            colocados++;
+            vPosicoes[i].x = rand_linha;
+            vPosicoes[i].y = rand_coluna;
         }
     }
 
@@ -422,4 +458,8 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
     }
 }
 
-
+int distancia_manhattan(pos atual, pos objetivo){
+    int r;
+    r = abs(atual.x - objetivo.x) + abs(atual.y - objetivo.y);
+    return r;
+}
