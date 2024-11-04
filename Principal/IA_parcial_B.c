@@ -56,8 +56,8 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
 
 //TESTE IA:
 //void po_dfs(int **matriz, int *linhas, int *colunas,int *i, int *j, int ia, int mov, int **visitado);
-void busca_B (int **matriz, int **visitado);
-
+void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas);
+void diagonal(int **matriz, int *i, int *j);
 
 
 int main() {
@@ -122,16 +122,18 @@ int main() {
 
         }else if(escolha == 3){
             //PARCIAL B
-            Pilha *p = NULL;;
-            p = CriaPilha();
-            if(p == NULL){
-                printf("\n\n\t\t PILHA VAZIA!!!! A PILHA não foi criada!!!\n\n");
-                exit(0);
-            }
-            system("cls");
             estado(matriz, &linhas, &colunas, escolha, visitado);
             printMatriz(&linhas, &colunas, matriz, escolha, visitado);
-            dfs(matriz, visitado, &pos1, &pos2);
+            while((pos1 != 1) && (pos2 != 1)){
+                printf("%d%d",pos1,pos2);
+                diagonal(matriz, &pos1, &pos2);
+                printMatriz(&linhas, &colunas, matriz, escolha, visitado);
+                sleep(1);
+                system("cls");
+            }
+            printMatriz(&linhas, &colunas, matriz, escolha, visitado);
+
+            //dfs(matriz, visitado, &pos1, &pos2, &linhas, &colunas, escolha);
 
 
         }
@@ -439,16 +441,44 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
     }
 }
 
+void diagonal(int **matriz, int *i, int *j){
 
-void dfs(int **matriz, int **visitado, int i, int j, int linhas, int colunas) {
-    // Marcar a posição atual como visitada
-    visitado[i][j] = 1;
+    int aux_i, aux_j;
+    aux_i = *i;
+    aux_j = *j;
 
-    // Se a posição é suja (1), limpa e atualiza para aspirador sobre piso limpo (20)
-    if (matriz[i][j] == 21) {
-        matriz[i][j] = 20;
+    if (*i > 1) {
+        (*i)--;
+    } else if (*i < 1) {
+        (*i)++;
+    } else if (*j < 1) {
+        (*j)++;
+    } else if (*j > 1) {
+        (*j)--;
+    } else {
+        return;
     }
 
+    if (matriz[aux_i][aux_j] == 20) {
+        matriz[aux_i][aux_j] = 0;
+    } else if (matriz[aux_i][aux_j] == 21) {
+        matriz[aux_i][aux_j] = 1;
+    }
+
+    if (matriz[*i][*j] == 0) {
+        matriz[*i][*j] = 20;
+    } else if (matriz[*i][*j] == 1) {
+        matriz[*i][*j] = 21;
+    }
+
+}
+
+void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas) {
+
+    // Se a posição é suja (1), limpa e atualiza para aspirador sobre piso limpo (20)
+    if (matriz[*i][*j] == 21) {
+        matriz[*i][*j] = 20;
+    }
     // Array de direções: cima, baixo, esquerda, direita
     int direcoes[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
@@ -461,7 +491,7 @@ void dfs(int **matriz, int **visitado, int i, int j, int linhas, int colunas) {
         if (novo_i >= 0 && novo_i < linhas && novo_j >= 0 && novo_j < colunas) {
             if (visitado[novo_i][novo_j] == 0) {  // Se a posição ainda não foi visitada
                 // Chamada recursiva para a nova posição
-                dfs(matriz, visitado, novo_i, novo_j, linhas, colunas);
+                dfs(matriz, visitado, novo_i, novo_j, *linhas, *colunas);
 
                 // Retorna à posição anterior após explorar a posição atual
                 localizarAspirador(matriz, &linhas, &colunas, &i, &j);
