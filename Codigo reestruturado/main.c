@@ -119,13 +119,16 @@ int main() {
             //PARCIALMENTE OBSERVÁVEL A
             while(sujeira != 0){ //CASO AINDA TENHAM SUJEIRAS
                 po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //REALIZ O DFS RECURSIVAMENTE ATÉ TRAVAR EM UMA CASA OU LIMPAR TUDO
-                system("cls");
                 if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){ //SE ESTIVER TRAVADO
                     backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //FAZ O BACKTRACKING ATÉ ONDE NECESSARIO (ATÉ NAO ESTAR MAIS PRESO)
                 }
             }
-                printf("\n Sala Limpa! \n"); //SALA LIMPA!
+                system("cls");
+                 estado(matriz, &linhas, &colunas, escolha, visitado); //GERA O ESTADO
+                printMatriz(&linhas, &colunas, matriz, escolha, visitado); //PRINTA O ESTADO
+                printf("\n\n\tAinda tem Sujeira no Ambiente? Nao (Sala Limpa!) \n"); //SALA LIMPA!
                 imprimePilha(IA_A); //IMPRIME A PILHA DE MOVIMENTOS
+                libera(IA_A); //LIBERA A PILHA DA MEMÓRIA
 
         }else if(escolha == 3){
             //PARCIAL B
@@ -433,19 +436,23 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
 
 void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p) {
 
+    if(*suj == 0){
+        return;
+    }
+
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); //IMPORTA PARA MUDAR A COR
 
     system("cls");
     estado(matriz, linhas, colunas, 2, visitado); //USA O ESTADO PARA SABER ONDE É VISITADO E ONDE NÃO É
     printMatriz(linhas, colunas, matriz, 2, visitado); //PRINTA A MATRIZ
     SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); //MUDA A COR PARA BRANCO
-    printf("\n\n\t Quantidade de sujeiras: %d", *suj); //PRINTA A QUANTIDADE DE SUJEIRAS RESTANTES
+    printf("\n\n\tAinda tem sujeira no Ambiente? SIM"); //PRINTA A QUANTIDADE DE SUJEIRAS RESTANTES
 
     //MARCA COMO VISITADO
     visitado[*i][*j] = 1;
 
     //USA A FUNÇÃO LIMPAR PARA LIMPAR
-    sleep(1);
+//    sleep(1);
     if(matriz[*i][*j] == 21 || matriz[*i][*j] == 1){
         limpar(KEY_CLEAN, matriz, i, j);
         (*suj) --;
