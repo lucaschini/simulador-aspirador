@@ -116,15 +116,16 @@ int main() {
             //OBSERVÁVEL
 
         }else if (escolha == 2) {
-            po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
-            system("cls");
-//            if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){
-//                printf("preso");
-//                backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
-//                po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
-//            }
-            printf("\n Sala Limpa! \n");
-            imprimePilha(IA_A);
+            while(sujeira != 0){
+                po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
+                system("cls");
+                if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){
+                    backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
+//                  po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
+                }
+            }
+                printf("\n Sala Limpa! \n");
+                imprimePilha(IA_A);
 
         }else if(escolha == 3){
             //PARCIAL B
@@ -432,7 +433,7 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
 
 void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p) {
 
-    while(*suj > 0){
+//    while(*suj > 0){
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
         system("cls");
@@ -484,16 +485,10 @@ void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visit
 
             }
         }
-    }
+//    }
 }
 
 int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas){
-
-//    if(visitado[*i + 1][*j] == 1 && visitado[*i - 1][*j] == 1 && visitado[*i][*j + 1] == 1 && visitado[*i][*j - 1] == 1 ){
-//        return 1;
-//    }else{
-//        return 0;
-//    }
 
     int verificador = 0;
     int mov_x[] = {-1, 0, 1, 0};
@@ -514,33 +509,28 @@ int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas){
 }
 
 void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p){
-    while (1) {
-        if (visitados(*i, *j, visitado, linhas, colunas) == 1) {
+//    while (1){
+//        if (visitados(*i, *j, visitado, *linhas, *colunas) == 1) {
             if (p->Topo == NULL) { //VERIFICA SE É VAZIO
-                break;
+                return;
             }
             pop(p);
             pop(p);
 
-            if (matriz[*i][*j] == 20) {
-                matriz[*i][*j] = 0;
-            }
-            else if (matriz[*i][*j] == 21) {
-                matriz[*i][*j] = 1;
-            }
+            int novo_i = p->Topo->info;
+            pop(p);
+            int novo_j = p->Topo->info;
+            pop(p);
 
-            *i = p->Topo->info;
-            p->Topo = p->Topo->prox;
-            *j = p->Topo->info;
+                //ATUALIZA A NOVA POSIÇÃO
+            matriz[*i][*j] = 0;
 
-            if (matriz[*i][*j] == 0) {
-                matriz[*i][*j] = 20;
-            }
-            else if (matriz[*i][*j] == 1) {
-                matriz[*i][*j] = 21;
-            }
-        } else {
-            break;
-        }
-    }
+            *i = novo_i;
+            *j = novo_j;
+
+            //ATUALIZA A POSIÇÃO DO ASPIRADOR
+            matriz[*i][*j] = 20;
+            estado(matriz, linhas, colunas, 2, visitado);
+            printMatriz(linhas, colunas, matriz, 2, visitado);
+//        }else {break;}
 }
