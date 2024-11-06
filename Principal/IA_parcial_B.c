@@ -55,9 +55,8 @@ int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MAT
 void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado);
 
 //TESTE IA:
-//void po_dfs(int **matriz, int *linhas, int *colunas,int *i, int *j, int ia, int mov, int **visitado);
-void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas);
-void diagonal(int **matriz, int *i, int *j);
+void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas, int escolha);
+void diagonal(int **matriz, int *i, int *j, int escolha, int **visitado, int *linhas, int *colunas);
 
 
 int main() {
@@ -124,18 +123,10 @@ int main() {
             //PARCIAL B
             estado(matriz, &linhas, &colunas, escolha, visitado);
             printMatriz(&linhas, &colunas, matriz, escolha, visitado);
-            while((pos1 != 1) && (pos2 != 1)){
-                printf("%d%d",pos1,pos2);
-                diagonal(matriz, &pos1, &pos2);
-                printMatriz(&linhas, &colunas, matriz, escolha, visitado);
-                sleep(1);
-                system("cls");
-            }
-            printMatriz(&linhas, &colunas, matriz, escolha, visitado);
-
-            //dfs(matriz, visitado, &pos1, &pos2, &linhas, &colunas, escolha);
-
-
+            sleep(1);
+            system("cls");
+//            diagonal(matriz, &pos1, &pos2, escolha, visitado, &linhas, &colunas);
+            dfs(matriz, visitado, &pos1, &pos2, &linhas, &colunas, escolha);
         }
     }
 
@@ -180,7 +171,6 @@ void menu_universo(int *escolha) {
     }
 }
 
-
 void menu_controladora(int *escolha) {
     int tecla = 0;
     *escolha = 1; //ATRIBUIMOS VALOR A VARIAVEL PARA O MENU COME�AR NA PRIMEIRA OP��O
@@ -210,7 +200,6 @@ void menu_controladora(int *escolha) {
         }
     }
 }
-
 
 void tamanhoTabuleiro(int *linhas, int *colunas) {
     printf(" Informe a quantidade de linhas matriz: ");
@@ -441,61 +430,105 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
     }
 }
 
-void diagonal(int **matriz, int *i, int *j){
+void diagonal(int **matriz, int *i, int *j, int escolha, int **visitado, int *linhas, int *colunas) {
+    int mov_x[] = {-1, 0};
+    int mov_y[] = {0, -1};
 
-    int aux_i, aux_j;
-    aux_i = *i;
-    aux_j = *j;
+    for (int k = 0; k < 2; k++) {
+        int novo_i = *i + mov_x[k];
+        int novo_j = *j + mov_y[k];
 
-    if (*i > 1) {
-        (*i)--;
-    } else if (*i < 1) {
-        (*i)++;
-    } else if (*j < 1) {
-        (*j)++;
-    } else if (*j > 1) {
-        (*j)--;
-    } else {
-        return;
-    }
-
-    if (matriz[aux_i][aux_j] == 20) {
-        matriz[aux_i][aux_j] = 0;
-    } else if (matriz[aux_i][aux_j] == 21) {
-        matriz[aux_i][aux_j] = 1;
-    }
-
-    if (matriz[*i][*j] == 0) {
-        matriz[*i][*j] = 20;
-    } else if (matriz[*i][*j] == 1) {
-        matriz[*i][*j] = 21;
-    }
-
-}
-
-void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas) {
-
-    // Se a posição é suja (1), limpa e atualiza para aspirador sobre piso limpo (20)
-    if (matriz[*i][*j] == 21) {
-        matriz[*i][*j] = 20;
-    }
-    // Array de direções: cima, baixo, esquerda, direita
-    int direcoes[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    // Explorar cada direção
-    for (int d = 0; d < 4; d++) {
-        int novo_i = i + direcoes[d][0];
-        int novo_j = j + direcoes[d][1];
-
-        // Verificar se a nova posição é válida
-        if (novo_i >= 0 && novo_i < linhas && novo_j >= 0 && novo_j < colunas) {
-            if (visitado[novo_i][novo_j] == 0) {  // Se a posição ainda não foi visitada
-                // Chamada recursiva para a nova posição
-                dfs(matriz, visitado, novo_i, novo_j, *linhas, *colunas);
-
-                // Retorna à posição anterior após explorar a posição atual
-                localizarAspirador(matriz, &linhas, &colunas, &i, &j);
+        // Verificar se a nova posição está dentro dos limites
+        if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas) {
+                // Redefine a posição atual como limpa antes de mover para a próxima célula
+            matriz[*i][*j] = 0;
+            if(matriz[novo_i][novo_j]==0){
+                matriz[novo_i][novo_j] = 20;
+            }else if(matriz[novo_i][novo_j]==1){
+                matriz[novo_i][novo_j] = 21;
             }
+
+            *i = novo_i;
+            *j = novo_j;
+
+            estado(matriz, linhas, colunas, escolha, visitado);
+            printMatriz(linhas, colunas, matriz, escolha, visitado);
+            sleep(1);
+            system("cls");
+
+            diagonal(matriz, i, j, escolha, visitado, linhas, colunas);
         }
     }
 }
+
+
+
+void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas, int escolha) {
+
+    //Cria pilha para o backtracking
+    Pilha *p = CriaPilha();
+
+    //Possiveis movimentos por ordem de prioridade
+    int mov_x[] = {-1, 0, +1, 0};
+    int mov_y[] = {0, -1, 0, +1};
+
+    // Percorre todas as direções possíveis
+        for (int d = 0; d < 4; d++) {
+            int novo_i = *i + mov_x[d];
+            int novo_j = *j + mov_y[d];
+
+
+            // Verifica se a nova posição está dentro dos limites e ainda não foi visitada
+            if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas /*&& visitado[novo_i][novo_j] == 0*/) {
+                // Define como limpa a casa atual
+                matriz[*i][*j] = 0;
+
+                // Define o aspirar na proxima casa
+                if(matriz[novo_i][novo_j]==0){
+                    matriz[novo_i][novo_j] = 20;
+                }else if(matriz[novo_i][novo_j]==1){
+                    matriz[novo_i][novo_j] = 21;
+                }
+
+                // Move o aspirador para a nova posição
+                *i = novo_i;
+                *j = novo_j;
+
+                //Guarda a posição atual na pilha
+                push(p,*i);
+                push(p,*j);
+
+                //Printa a matriz após o movimento
+                estado(matriz, linhas, colunas, escolha, visitado);
+                printMatriz(linhas, colunas, matriz, escolha, visitado);
+                sleep(1);
+                system("cls");
+
+                // Chama a função recursivamente para a nova posição
+                dfs(matriz, visitado, i, j, linhas, colunas, escolha);
+
+            }
+
+        }
+
+                //Define a casa atual como limpa
+                matriz[*i][*j] = 0;
+
+                //Define a posição do aspirador como a anterior
+                *j = pop(p);
+                *i = pop(p);
+
+                //Define a posição atual como aspirador
+                matriz[*i][*j] = 20;
+
+                //Printa a matriz após o backtracking
+                estado(matriz, linhas, colunas, escolha, visitado);
+                printMatriz(linhas, colunas, matriz, escolha, visitado);
+                sleep(1);
+                system("cls");
+
+                // Chama a função recursivamente para a nova posição
+                dfs(matriz, visitado, i, j, linhas, colunas, escolha);
+
+}
+
