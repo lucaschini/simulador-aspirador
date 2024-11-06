@@ -52,9 +52,9 @@ int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MAT
 void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado);
 
 //TESTE IA:
-void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p);
-int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas);
-void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p);
+void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p); //PARCIALMENTE OBSERVAVEL DEPTH-FIRST SEARCH
+int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas); //VERIFICA SE AS CASAS ADJACENTES FORAM VISITADAS (VERIFICA SE ESTA PRESO)
+void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p); //FAZ O BACKTRACKING DANDO POP NA PILHA
 
 int main() {
     setlocale(LC_ALL, "pt_BR.UTF-8"); //PARA LIBERAR ACENTUAÇÃO
@@ -66,7 +66,7 @@ int main() {
     int pos1, pos2;
     int retorno = 0, tecla;
     int **visitado;
-    Pilha *IA_A = CriaPilha();
+    Pilha *IA_A = CriaPilha(); //CRIO A PILHA PARA O CENARIO PARCIALMENTE A
 
     //GERA OS MENUS
     menu_universo(&escolha);
@@ -116,15 +116,16 @@ int main() {
             //OBSERVÁVEL
 
         }else if (escolha == 2) {
-            while(sujeira != 0){
-                po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
+            //PARCIALMENTE OBSERVÁVEL A
+            while(sujeira != 0){ //CASO AINDA TENHAM SUJEIRAS
+                po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //REALIZ O DFS RECURSIVAMENTE ATÉ TRAVAR EM UMA CASA OU LIMPAR TUDO
                 system("cls");
-                if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){
-                    backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
+                if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){ //SE ESTIVER TRAVADO
+                    backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //FAZ O BACKTRACKING ATÉ ONDE NECESSARIO (ATÉ NAO ESTAR MAIS PRESO)
                 }
             }
-                printf("\n Sala Limpa! \n");
-                imprimePilha(IA_A);
+                printf("\n Sala Limpa! \n"); //SALA LIMPA!
+                imprimePilha(IA_A); //IMPRIME A PILHA DE MOVIMENTOS
 
         }else if(escolha == 3){
             //PARCIAL B
@@ -432,102 +433,97 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
 
 void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p) {
 
-//    while(*suj > 0){
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); //IMPORTA PARA MUDAR A COR
 
-        system("cls");
-        estado(matriz, linhas, colunas, 2, visitado);
-        printMatriz(linhas, colunas, matriz, 2, visitado);
-        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        printf("\n\n\t Quantidade de sujeiras: %d", *suj);
-        sleep(1);
+    system("cls");
+    estado(matriz, linhas, colunas, 2, visitado); //USA O ESTADO PARA SABER ONDE É VISITADO E ONDE NÃO É
+    printMatriz(linhas, colunas, matriz, 2, visitado); //PRINTA A MATRIZ
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); //MUDA A COR PARA BRANCO
+    printf("\n\n\t Quantidade de sujeiras: %d", *suj); //PRINTA A QUANTIDADE DE SUJEIRAS RESTANTES
 
-        //MARCA COMO VISITADO
-        visitado[*i][*j] = 1;
+    //MARCA COMO VISITADO
+    visitado[*i][*j] = 1;
 
-        //USA A FUNÇÃO LIMPAR PARA LIMPAR
-        sleep(1);
-        if(matriz[*i][*j] == 21 || matriz[*i][*j] == 1){
-            limpar(KEY_CLEAN, matriz, i, j);
-            (*suj) --;
+    //USA A FUNÇÃO LIMPAR PARA LIMPAR
+    sleep(1);
+    if(matriz[*i][*j] == 21 || matriz[*i][*j] == 1){
+        limpar(KEY_CLEAN, matriz, i, j);
+        (*suj) --;
+    }
+    matriz[*i][*j] = 0;
+
+    //SALVA A POSIÇÃO ATUAL NA PILHA
+    push(p, *j);
+    push(p, *i);
+
+    //QND AS POS ADJ FOREM VIS == 1, ELE FAZ BACKTRACKING ATÉ ALGUMA NAO SER
+
+    //CRIA UMA LISTA DE MOVIMENTOS PRIORITÁRIOS
+    int mov_x[] = {-1, 0, 1, 0};
+    int mov_y[] = {0, -1, 0, 1};
+
+    //ATUALIZA NOVO_I E NOVO_J PARA AS POSIÇÕES SOLICITADAS
+    for (int d = 0; d < 4; d++) {
+        int novo_i = *i + mov_x[d];
+        int novo_j = *j + mov_y[d];
+
+        //VERIFICA SE A POSIÇÃO JA FOI VISITADA OU SE JA ESTA NO TABULEIRO
+        if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas && visitado[novo_i][novo_j] == 0) {
+
+            //ATUALIZA A NOVA POSIÇÃO
+            *i = novo_i;
+            *j = novo_j;
+
+            //ATUALIZA A POSIÇÃO DO ASPIRADOR
+            if(matriz[*i][*j] == 0){matriz[*i][*j] = 20;}
+            if(matriz[*i][*j] == 1){matriz[*i][*j] = 21;}
+
+            //CHAMA RECURSÃO
+            po_dfs(matriz, linhas, colunas, i, j, visitado, suj, p);
+
         }
-        matriz[*i][*j] = 0;
-
-        //SALVA A POSIÇÃO ATUAL NA PILHA
-        push(p, *j);
-        push(p, *i);
-
-        //QND AS POS ADJ FOREM VIS == 1, ELE FAZ BACKTRACKING ATÉ ALGUMA NAO SER
-
-        //CRIA UMA LISTA DE MOVIMENTOS PRIORITÁRIOS
-        int mov_x[] = {-1, 0, 1, 0};
-        int mov_y[] = {0, -1, 0, 1};
-
-        //ATUALIZA NOVO_I E NOVO_J PARA AS POSIÇÕES SOLICITADAS
-        for (int d = 0; d < 4; d++) {
-            int novo_i = *i + mov_x[d];
-            int novo_j = *j + mov_y[d];
-
-            //VERIFICA SE A POSIÇÃO JA FOI VISITADA OU SE JA ESTA NO TABULEIRO
-            if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas && visitado[novo_i][novo_j] == 0) {
-
-                //ATUALIZA A NOVA POSIÇÃO
-                *i = novo_i;
-                *j = novo_j;
-
-                //ATUALIZA A POSIÇÃO DO ASPIRADOR
-                if(matriz[*i][*j] == 0){matriz[*i][*j] = 20;}
-                if(matriz[*i][*j] == 1){matriz[*i][*j] = 21;}
-
-                //CHAMA RECURSÃO
-                po_dfs(matriz, linhas, colunas, i, j, visitado, suj, p);
-
-            }
-        }
-//    }
+    }
 }
 
 int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas){
 
-    int verificador = 0;
+    int verificador = 0; //CRIA VERIFICADOR
+    //SALVA OS MOVIMENTOS POSSIVEIS EM DOIS VETORES
     int mov_x[] = {-1, 0, 1, 0};
     int mov_y[] = {0, -1, 0, 1};
 
-    for (int d = 0; d < 4; d++) {
+    for (int d = 0; d < 4; d++) { //DEFINE TODAS AS MOVIMENTAÇÕES PARA NOVO I E NOVO J
         int novo_i = *i + mov_x[d];
         int novo_j = *j + mov_y[d];
 
         //VERIFICA SE A POSIÇÃO JA FOI VISITADA OU SE JA ESTA NO TABULEIRO
         if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas){
             if(visitado[novo_i][novo_j] == 0){
-                return 0;
+                return 0; //CASO TENHA UMA POSIÇÃO QUE AINDA NAO FOI VISITADA PROXIMA(NÃO É PARA TER), RETORNA 0
             }
         }
     }
-    return 1;
+    return 1; //CASO ESTEJA PRESO, RETORNA 1
 }
 
 void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p){
-//    while (1){
-//        if (visitados(*i, *j, visitado, *linhas, *colunas) == 1) {
-            if (p->Topo == NULL) { //VERIFICA SE É VAZIO
-                return;
-            }
-            pop(p);
-            pop(p);
 
-            int novo_i = pop(p);
-            int novo_j = pop(p);
+    if (p->Topo == NULL) { //VERIFICA SE É VAZIO
+        return;
+    }
+    pop(p); //RETIRA A POSIÇÃO DA CASA I ATUAL DA PILHA
+    pop(p); //RETIRA A POSIÇÃO DA CASA J ATUAL DA PILHA
 
-                //ATUALIZA A NOVA POSIÇÃO
-            matriz[*i][*j] = 0;
+    int novo_i = pop(p); //SALVA O I DO MOVIMENTO ANTERIOR COMO NOVO I E JA O APAGA DA PILHA
+    int novo_j = pop(p); //SALVA O J DO MOVIMENTO ANTERIOR COMO NOVO J E JA O APAGA DA PILHA
 
-            *i = novo_i;
-            *j = novo_j;
+    //ATUALIZA A NOVA POSIÇÃO
+    matriz[*i][*j] = 0;
+    *i = novo_i;
+    *j = novo_j;
 
-            //ATUALIZA A POSIÇÃO DO ASPIRADOR
-            matriz[*i][*j] = 20;
-            estado(matriz, linhas, colunas, 2, visitado);
-            printMatriz(linhas, colunas, matriz, 2, visitado);
-//        }else {break;}
+    //ATUALIZA A POSIÇÃO DO ASPIRADOR
+    matriz[*i][*j] = 20;
+    estado(matriz, linhas, colunas, 2, visitado);
+    printMatriz(linhas, colunas, matriz, 2, visitado);
 }
