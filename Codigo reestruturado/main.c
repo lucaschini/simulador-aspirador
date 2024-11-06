@@ -5,7 +5,7 @@
 #include <locale.h>
 #include <conio.h>
 #include <windows.h>
-
+#include "pilha.h"
 
 //MOVIMENTOS MANUAIS
 #define KEY_UP 72
@@ -52,9 +52,9 @@ int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MAT
 void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado);
 
 //TESTE IA:
-void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int suj);
-
-
+void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p);
+int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas);
+void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p);
 
 int main() {
     setlocale(LC_ALL, "pt_BR.UTF-8"); //PARA LIBERAR ACENTUAÇÃO
@@ -66,6 +66,7 @@ int main() {
     int pos1, pos2;
     int retorno = 0, tecla;
     int **visitado;
+    Pilha *IA_A = CriaPilha();
 
     //GERA OS MENUS
     menu_universo(&escolha);
@@ -75,6 +76,7 @@ int main() {
     //GERA AS DIMENSÕES E SUJEIRAS DO TABULEIRO
     tamanhoTabuleiro(&linhas, &colunas);
     qtd_1 = qtdSujeira(&linhas, &colunas);
+    int sujeira = qtd_1;
     system("cls");
 
     //GERA O TABULEIRO
@@ -114,14 +116,20 @@ int main() {
             //OBSERVÁVEL
 
         }else if (escolha == 2) {
-            po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, qtd_1);
+            po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
             system("cls");
+//            if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){
+//                printf("preso");
+//                backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
+//                po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
+//            }
             printf("\n Sala Limpa! \n");
+            imprimePilha(IA_A);
+
         }else if(escolha == 3){
             //PARCIAL B
         }
     }
-
 
     //LIBERA A MEMÓRIA DAS CASAS VISITADAS
     freeVisitado(visitado, &linhas);
@@ -163,7 +171,6 @@ void menu_universo(int *escolha) {
     }
 }
 
-
 void menu_controladora(int *escolha) {
     int tecla = 0;
     *escolha = 1; //ATRIBUIMOS VALOR A VARIAVEL PARA O MENU COMEÇAR NA PRIMEIRA OPÇÃO
@@ -193,7 +200,6 @@ void menu_controladora(int *escolha) {
         }
     }
 }
-
 
 void tamanhoTabuleiro(int *linhas, int *colunas) {
     printf(" Informe a quantidade de linhas matriz: ");
@@ -424,60 +430,117 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
     }
 }
 
-void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int suj) {
+void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p) {
 
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    while(*suj > 0){
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    system("cls");
-    estado(matriz, linhas, colunas, 2, visitado);
-    printMatriz(linhas, colunas, matriz, 2, visitado);
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-    printf("\n\n\t Quantidade de sujeiras: %d", suj);
-    sleep(1);
+        system("cls");
+        estado(matriz, linhas, colunas, 2, visitado);
+        printMatriz(linhas, colunas, matriz, 2, visitado);
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        printf("\n\n\t Quantidade de sujeiras: %d", *suj);
+        sleep(1);
 
-    // Marca a célula atual como visitada
-    visitado[*i][*j] = 1;
+        //MARCA COMO VISITADO
+        visitado[*i][*j] = 1;
 
-    // Limpa a sujeira na posição atual, se houver
-    sleep(1);
-    if(matriz[*i][*j] == 21){
-        limpar(KEY_CLEAN, matriz, i, j);
-        suj --;
-    }
+        //USA A FUNÇÃO LIMPAR PARA LIMPAR
+        sleep(1);
+        if(matriz[*i][*j] == 21 || matriz[*i][*j] == 1){
+            limpar(KEY_CLEAN, matriz, i, j);
+            (*suj) --;
+        }
+        matriz[*i][*j] = 0;
 
-    // Vetores de direção para cima, baixo, esquerda e direita
-    int mov_x[] = {-1, 1, 0, 0};
-    int mov_y[] = {0, 0, -1, 1};
+        //SALVA A POSIÇÃO ATUAL NA PILHA
+        push(p, *j);
+        push(p, *i);
 
-    // Percorre todas as direções possíveis
-    for (int d = 0; d < 4; d++) {
-        int novo_i = *i + mov_x[d];
-        int novo_j = *j + mov_y[d];
+        //QND AS POS ADJ FOREM VIS == 1, ELE FAZ BACKTRACKING ATÉ ALGUMA NAO SER
 
-        // Verifica se a nova posição está dentro dos limites e ainda não foi visitada
-        if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas && visitado[novo_i][novo_j] == 0) {
-            // Redefine a posição atual como limpa antes de mover para a próxima célula
-            matriz[*i][*j] = 0;
+        //CRIA UMA LISTA DE MOVIMENTOS PRIORITÁRIOS
+        int mov_x[] = {-1, 0, 1, 0};
+        int mov_y[] = {0, -1, 0, 1};
 
-            // Move o aspirador para a nova posição
-            *i = novo_i;
-            *j = novo_j;
+        //ATUALIZA NOVO_I E NOVO_J PARA AS POSIÇÕES SOLICITADAS
+        for (int d = 0; d < 4; d++) {
+            int novo_i = *i + mov_x[d];
+            int novo_j = *j + mov_y[d];
 
-            // Atualiza a posição do aspirador na nova célula
-            if(matriz[*i][*j] == 0){matriz[*i][*j] = 20;}
-            if(matriz[*i][*j] == 1){matriz[*i][*j] = 21;}
+            //VERIFICA SE A POSIÇÃO JA FOI VISITADA OU SE JA ESTA NO TABULEIRO
+            if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas && visitado[novo_i][novo_j] == 0) {
 
-            // Chama a função recursivamente para a nova posição
-            po_dfs(matriz, linhas, colunas, i, j, visitado, suj);
+                //ATUALIZA A NOVA POSIÇÃO
+                *i = novo_i;
+                *j = novo_j;
 
-            // Retorna à posição anterior após explorar o caminho, redefinindo a posição atual
-            matriz[*i][*j] = 0;
-            *i -= mov_x[d];
-            *j -= mov_y[d];
+                //ATUALIZA A POSIÇÃO DO ASPIRADOR
+                if(matriz[*i][*j] == 0){matriz[*i][*j] = 20;}
+                if(matriz[*i][*j] == 1){matriz[*i][*j] = 21;}
 
-            // Recoloca o aspirador na célula anterior após o retorno
-            matriz[*i][*j] = 20;
+                //CHAMA RECURSÃO
+                po_dfs(matriz, linhas, colunas, i, j, visitado, suj, p);
+
+            }
         }
     }
 }
 
+int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas){
+
+//    if(visitado[*i + 1][*j] == 1 && visitado[*i - 1][*j] == 1 && visitado[*i][*j + 1] == 1 && visitado[*i][*j - 1] == 1 ){
+//        return 1;
+//    }else{
+//        return 0;
+//    }
+
+    int verificador = 0;
+    int mov_x[] = {-1, 0, 1, 0};
+    int mov_y[] = {0, -1, 0, 1};
+
+    for (int d = 0; d < 4; d++) {
+        int novo_i = *i + mov_x[d];
+        int novo_j = *j + mov_y[d];
+
+        //VERIFICA SE A POSIÇÃO JA FOI VISITADA OU SE JA ESTA NO TABULEIRO
+        if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas){
+            if(visitado[novo_i][novo_j] == 0){
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p){
+    while (1) {
+        if (visitados(*i, *j, visitado, linhas, colunas) == 1) {
+            if (p->Topo == NULL) { //VERIFICA SE É VAZIO
+                break;
+            }
+            pop(p);
+            pop(p);
+
+            if (matriz[*i][*j] == 20) {
+                matriz[*i][*j] = 0;
+            }
+            else if (matriz[*i][*j] == 21) {
+                matriz[*i][*j] = 1;
+            }
+
+            *i = p->Topo->info;
+            p->Topo = p->Topo->prox;
+            *j = p->Topo->info;
+
+            if (matriz[*i][*j] == 0) {
+                matriz[*i][*j] = 20;
+            }
+            else if (matriz[*i][*j] == 1) {
+                matriz[*i][*j] = 21;
+            }
+        } else {
+            break;
+        }
+    }
+}
