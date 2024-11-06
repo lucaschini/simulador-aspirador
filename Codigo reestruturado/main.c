@@ -30,14 +30,20 @@
 // TO SEE: https://www.hashtagtreinamentos.com/como-waze-funciona-python
 // Insertion Sort
 // https://joaoarthurbm.github.io/eda/posts/insertion-sort/
-//https://github.com/malufreitas/a-estrela/blob/master/main.py
-//https://wagnergaspar.com/como-implementar-a-estrutura-de-dados-fila-de-prioridade-em-c/
-//https://www.youtube.com/watch?v=ECdLOLaIVx8
+// https://github.com/malufreitas/a-estrela/blob/master/main.py
+// https://wagnergaspar.com/como-implementar-a-estrutura-de-dados-fila-de-prioridade-em-c/
+// https://www.youtube.com/watch?v=ECdLOLaIVx8
 
-typedef struct pos{
-    int x;
-    int y;
-} pos;
+// ESTRUTURAS PARA A*
+// Estrutura para representar uma célula (ou nó)
+typedef struct no {
+    int x, y;              // Coordenadas da célula
+    int custoG;            // Custo g(x) para o A*
+    int custoH;            // Heurística h(x) para o A*
+    struct no* pai;   // Ponteiro para o nó pai
+    struct no* prox;     // Ponteiro para o próximo nó na lista
+} Celula;
+
 
 // FUNÇÕES DO MENU
 void menu_universo(int *escolha);
@@ -46,24 +52,37 @@ void menu_controladora(int *escolha);
 //  FUNÇÕES BÁSICAS
 
 void tamanhoTabuleiro(int *linhas, int *colunas); //LER TAMANHO DA SALA
+
 int qtdSujeira(int *linhas, int *colunas); //LER QUANTIDADE SUJEIRAS
-int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1, pos *vPosicoes); //GERAR TABULEIRO
+
+int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1); //GERAR TABULEIRO
+
 void printMatriz(int *linhas, int *colunas, int **matriz, int escolha, int **visitado); //IMPRIMIR MATRIZ
+
 void gerarPosicaoAspirador(int *linhas, int *colunas, int **matriz); //GERAR ASPIRADOR
+
 void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j); //LOCALIZAR ASPIRADOR
+
 int avalia(int **matriz, int *linhas, int *colunas); //OBJETIVO CONCLUIDO
+
 void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas, int mov); //MOVIMENTACAO
+
 void limpar(int movimento, int **matriz, int*i, int *j, int ia); //LIMPAR SUJEIRA
+
 void freeMatriz(int **matriz, int *linhas); //LIMPAR MEMORIA ALOCADA
+
 void freeVisitado(int **visitados, int *linhas);//LIMPA MEMORIA ALOCADA
+
 int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MATRIZ
+
 void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado);
 
 //TESTE IA:
 //void po_dfs(int **matriz, int *linhas, int *colunas,int *i, int *j, int ia, int mov, int **visitado);
 
 // FUNÇÕES PARA IA DO UNIVERSO OBSERVÁVEL:
-int distancia_manhattan(pos atual, pos objetivo);
+Celula *criarCelula(int x, int y, int custoG, int custoH, Celula *pai);
+int distanciaManhattan(int x1, int x2, int y1, int y2);
 
 int main() {
     setlocale(LC_ALL, "pt_BR.UTF-8"); //PARA LIBERAR ACENTUAÇÃO
@@ -85,18 +104,12 @@ int main() {
     //GERA AS DIMENSÕES E SUJEIRAS DO TABULEIRO
     tamanhoTabuleiro(&linhas, &colunas);
     qtd_1 = qtdSujeira(&linhas, &colunas);
-    pos *vPosicoes = (pos *)malloc(qtd_1 * sizeof(pos));
 
     system("cls");
 
 
     //GERA O TABULEIRO
-    int **matriz = gerarTabuleiro(&linhas, &colunas, qtd_1, vPosicoes);
-
-    for(int i = 0; i < qtd_1; i++) {
-        printf("Sujeira %d: (%d, %d)\n", i, vPosicoes[i].x, vPosicoes[i].y);
-    }
-
+    int **matriz = gerarTabuleiro(&linhas, &colunas, qtd_1);
 
     //ALOCA MEMÓRIA PARA O VISITADO
     visitado = (int **)malloc(linhas * sizeof(int *));
@@ -110,17 +123,6 @@ int main() {
     //GERA ASPIRADOR
     gerarPosicaoAspirador(&linhas, &colunas, matriz);
     localizarAspirador(matriz, &linhas, &colunas, &pos1, &pos2);
-
-    pos posicoes_aspirador;
-    posicoes_aspirador.x = pos1;
-    posicoes_aspirador.y = pos2;
-
-    for(int i = 0; i < qtd_1; i++) {
-        pos posicoes_objetivo;
-        posicoes_objetivo.x = vPosicoes[i].x;
-        posicoes_objetivo.y = vPosicoes[i].y;
-        printf("Distancia da sujeira %d: %d\n", i+1, distancia_manhattan(posicoes_aspirador, posicoes_objetivo));
-    }
     //CASO SEJA MANUAL
     if(escolha2 == 1){
         while (retorno != 1) {
@@ -144,6 +146,10 @@ int main() {
             // eu posso calcular qual o ponto mais perto pro mais longo e ordernar eles na lista de prioridade, caso list!=NULL continuo adicionando a movimentação necessaria no array de caminhos
             // funções: calcular_distancia, percurso
 
+            Celula **dicPosicoesCalculadas;
+            Coordenada inicio, objetivo;
+            Lista *listaAberta = Inicializa(), *listaFechada = Inicializa();
+
 
 
 
@@ -160,7 +166,6 @@ int main() {
 
     //LIBERA A MEMORIA DA MATRIZ
     freeMatriz(matriz, &linhas);
-    free(vPosicoes);
     return 0;
 }
 
@@ -271,7 +276,7 @@ int qtdSujeira(int *linhas, int *colunas) {
     return qtd_sujeira;
 }
 
-int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1, pos *vPosicoes) {
+int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1) {
     int **matriz = (int **)malloc(*linhas * sizeof(int *));
     for (int i = 0; i < *linhas; i++) {
         matriz[i] = (int *)malloc(*colunas * sizeof(int));
@@ -293,8 +298,6 @@ int **gerarTabuleiro(int *linhas, int *colunas, int qtd_1, pos *vPosicoes) {
         // Coloca o 1 na posição se ainda for 0
         if (matriz[rand_linha][rand_coluna] == 0) {
             matriz[rand_linha][rand_coluna] = 1;
-            vPosicoes[i].x = rand_linha;
-            vPosicoes[i].y = rand_coluna;
         }
     }
 
@@ -458,8 +461,20 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
     }
 }
 
-int distancia_manhattan(pos atual, pos objetivo){
-    int r;
-    r = abs(atual.x - objetivo.x) + abs(atual.y - objetivo.y);
-    return r;
+
+// A*
+
+Celula *criarCelula(int x, int y, int custoG, int custoH, Celula *pai){
+    Celula *novoNo = (Celula*)malloc(sizeof(Celula));
+    novoNo->x = x;
+    novoNo->y = y;
+    novoNo->custoG = custoG;
+    novoNo->custoH = custoH;
+    novoNo->pai = pai;
+    novoNo->prox = NULL;
+    return novoNo;
+}
+
+int distanciaManhattan(int x1, int x2, int y1, int y2){
+    return abs(x1 - x2) + abs(y1 - y2);
 }

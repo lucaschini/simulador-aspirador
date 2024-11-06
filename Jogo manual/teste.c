@@ -26,6 +26,7 @@
 
 void menu_universo(int *escolha);
 void menu_controladora(int *escolha);
+
 //  FUNÇÕES BÁSICAS
 
 void tamanhoTabuleiro(int *linhas, int *colunas); //LER TAMANHO DA SALA
@@ -49,6 +50,11 @@ void limpar(int movimento, int **matriz, int*i, int *j); //LIMPAR SUJEIRA
 void freeMatriz(int **matriz, int *linhas); //LIMPAR MEMORIA ALOCADA
 
 int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MATRIZ
+
+// FUNÇÕES DA IA OBSERVAVEL
+// ALGORITMO ESCOLHIDO: A* : f(x) = g(x) + h(x)
+
+
 
 
 
