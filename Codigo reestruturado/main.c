@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <locale.h>
-#include <conio.h>
-#include <windows.h>
+//#include <conio.h>
+//#include <windows.h>
 
 
 //MOVIMENTOS MANUAIS
@@ -44,6 +44,10 @@ typedef struct no {
     struct no* prox;     // Ponteiro para o próximo nó na lista
 } Celula;
 
+typedef struct cel {
+    int x,y;
+} Coordenada;
+
 
 // FUNÇÕES DO MENU
 void menu_universo(int *escolha);
@@ -82,13 +86,21 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
 
 // FUNÇÕES PARA IA DO UNIVERSO OBSERVÁVEL:
 Celula *criarCelula(int x, int y, int custoG, int custoH, Celula *pai);
+void addCelula(Celula** head, Celula* novaCelula);
+void removeCelula(Celula** head, Celula* celulaToRemove)
+
+Celula* celulaComMenorCusto(Celula* head);
 int distanciaManhattan(int x1, int x2, int y1, int y2);
+
+void freeLista(Celula* head);
+
+
 
 int main() {
     setlocale(LC_ALL, "pt_BR.UTF-8"); //PARA LIBERAR ACENTUAÇÃO
     srand(time(NULL)); //PARA GERAR CASAS ALEATÓRIAS
-    SetConsoleOutputCP(CP_UTF8); // PARA COR DO ASPIRADOR MUDAR NO CONSOLE
-    SetConsoleCP(CP_UTF8);
+//    SetConsoleOutputCP(CP_UTF8); // PARA COR DO ASPIRADOR MUDAR NO CONSOLE
+//    SetConsoleCP(CP_UTF8);
 
     int linhas = 0, colunas = 0, qtd_1, escolha, escolha2, ia = 0, mov = 0;
     int pos1, pos2;
@@ -148,7 +160,7 @@ int main() {
 
             Celula **dicPosicoesCalculadas;
             Coordenada inicio, objetivo;
-            Lista *listaAberta = Inicializa(), *listaFechada = Inicializa();
+            Celula *listaAberta = NULL, Celula *listaFechada = NULL;
 
 
 
@@ -477,4 +489,113 @@ Celula *criarCelula(int x, int y, int custoG, int custoH, Celula *pai){
 
 int distanciaManhattan(int x1, int x2, int y1, int y2){
     return abs(x1 - x2) + abs(y1 - y2);
+}
+
+void addCelula(Celula** head, Celula* novaCelula) {
+    novaCelula->next = *head;
+    *head = novaCelula;
+}
+
+void removeCelula(Celula** head, Celula* celulaToRemove) {
+    if (*head == NULL) return;
+
+    if (*head == celulaToRemove) {
+        *head = (*head)->next;
+        free(celulaToRemove);
+        return;
+    }
+
+}
+
+Celula *celulaComMenorCusto(Celula* head) {
+    Celula* lowest = head;
+    Celula* temp = head;
+    while (temp) {
+        if ((temp->custoG + temp->custoH) < (lowest->custoG + lowest->custoH)) {
+            lowest = temp;
+        }
+        temp = temp->next;
+    }
+    return lowest;
+}
+
+void freeLista(Celula* head) {
+    while (head) {
+        Celula *temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int busca(int startX, int startY, int endX, int endY, int** matriz, int linhas, int colunas) { // mudar o end pra lista de objetivos
+    Celula* listaAberta = NULL;
+    Celula* listaFechada = NULL;
+
+    // Adiciona o nó inicial (posição inicial do aspirador) *talvez se eu deixar isso num while e a cada objetivo calcular o proximo caminho funcione à lista aberta
+    Celula* celulaInicial = criarCelula(startX, startY, 0, distanciaManhattan(startX, startY, endX, endY), NULL);
+    addNo(&openList, celulaInicial); // parei aqui
+
+    int dx[] = {-1, 1, 0, 0}; // Movimentos: cima, baixo, esquerda, direita ( talvez usar sucessora
+    int dy[] = {0, 0, -1, 1};
+
+    while (openList != NULL) {
+        // Encontra o nó com o menor custo na lista aberta
+        Node* currentNode = findLowestCostNode(openList);
+
+        // Se o nó atual é o destino, imprime o caminho e finaliza
+        if (currentNode->x == endX && currentNode->y == endY) {
+            printf("Caminho encontrado:\n");
+            printPath(currentNode);
+            printf("Meta\n");
+            freeList(openList);
+            freeList(closedList);
+            return 1; // Caminho encontrado
+        }
+
+        // Move o nó atual da lista aberta para a lista fechada
+        removeNode(&openList, currentNode);
+        addNode(&closedList, currentNode);
+
+        // Explora cada vizinho do nó atual
+        for (int i = 0; i < 4; i++) {
+            int nx = currentNode->x + dx[i];
+            int ny = currentNode->y + dy[i];
+
+            // Verifica se o vizinho está dentro dos limites e se não é obstáculo
+            if (nx >= 0 && nx < rows && ny >= 0 && ny < cols && grid[nx][ny] == 0) {
+                // Se o vizinho já está na lista fechada, ignore
+                if (isInList(closedList, nx, ny)) continue;
+
+                int g_cost = currentNode->g_cost + 1;
+                int h_cost = manhattanDistance(nx, ny, endX, endY);
+
+                // Se o vizinho já está na lista aberta, atualize o custo se necessário
+                if (isInList(openList, nx, ny)) {
+                    Node* existingNode = openList;
+                    while (existingNode) {
+                        if (existingNode->x == nx && existingNode->y == ny) {
+                            if (g_cost < existingNode->g_cost) {
+                                existingNode->g_cost = g_cost;
+                                existingNode->parent = currentNode;
+                            }
+                            break;
+                        }
+                        existingNode = existingNode->next;
+                    }
+                } else {
+                    // Adiciona o vizinho à lista aberta
+                    Node* neighborNode = createNode(nx, ny, g_cost, h_cost, currentNode);
+                    addNode(&openList, neighborNode);
+                }
+            }
+        }
+    }
+
+    printf("Caminho não encontrado.\n");
+    freeList(openList);
+    freeList(closedList);
+    return 0; // Caminho não encontrado
+}
+
+
 }
