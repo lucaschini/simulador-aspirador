@@ -121,7 +121,6 @@ int main() {
                 system("cls");
                 if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){
                     backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
-//                  po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A);
                 }
             }
                 printf("\n Sala Limpa! \n");
@@ -517,10 +516,8 @@ void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int
             pop(p);
             pop(p);
 
-            int novo_i = p->Topo->info;
-            pop(p);
-            int novo_j = p->Topo->info;
-            pop(p);
+            int novo_i = pop(p);
+            int novo_j = pop(p);
 
                 //ATUALIZA A NOVA POSIÇÃO
             matriz[*i][*j] = 0;
