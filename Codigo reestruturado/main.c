@@ -5,7 +5,7 @@
 #include <locale.h>
 #include <conio.h>
 #include <windows.h>
-
+#include "pilha.h"
 
 //MOVIMENTOS MANUAIS
 #define KEY_UP 72
@@ -44,17 +44,17 @@ void printMatriz(int *linhas, int *colunas, int **matriz, int escolha, int **vis
 void gerarPosicaoAspirador(int *linhas, int *colunas, int **matriz); //GERAR ASPIRADOR
 void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j); //LOCALIZAR ASPIRADOR
 int avalia(int **matriz, int *linhas, int *colunas); //OBJETIVO CONCLUIDO
-void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas, int mov); //MOVIMENTACAO
-void limpar(int movimento, int **matriz, int*i, int *j, int ia); //LIMPAR SUJEIRA
+void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas); //MOVIMENTACAO
+void limpar(int movimento, int **matriz, int*i, int *j); //LIMPAR SUJEIRA
 void freeMatriz(int **matriz, int *linhas); //LIMPAR MEMORIA ALOCADA
 void freeVisitado(int **visitados, int *linhas);//LIMPA MEMORIA ALOCADA
 int **copiarMatriz(int **matriz, int *linhas, int *colunas); //FUNCAO COPIAR MATRIZ
 void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado);
 
 //TESTE IA:
-//void po_dfs(int **matriz, int *linhas, int *colunas,int *i, int *j, int ia, int mov, int **visitado);
-
-
+void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p); //PARCIALMENTE OBSERVAVEL DEPTH-FIRST SEARCH
+int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas); //VERIFICA SE AS CASAS ADJACENTES FORAM VISITADAS (VERIFICA SE ESTA PRESO)
+void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p); //FAZ O BACKTRACKING DANDO POP NA PILHA
 
 int main() {
     setlocale(LC_ALL, "pt_BR.UTF-8"); //PARA LIBERAR ACENTUAÇÃO
@@ -62,10 +62,11 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
-    int linhas = 0, colunas = 0, qtd_1, escolha, escolha2, ia = 0, mov = 0;
+    int linhas = 0, colunas = 0, qtd_1, escolha, escolha2;
     int pos1, pos2;
     int retorno = 0, tecla;
     int **visitado;
+    Pilha *IA_A = CriaPilha(); //CRIO A PILHA PARA O CENARIO PARCIALMENTE A
 
     //GERA OS MENUS
     menu_universo(&escolha);
@@ -75,6 +76,7 @@ int main() {
     //GERA AS DIMENSÕES E SUJEIRAS DO TABULEIRO
     tamanhoTabuleiro(&linhas, &colunas);
     qtd_1 = qtdSujeira(&linhas, &colunas);
+    int sujeira = qtd_1;
     system("cls");
 
     //GERA O TABULEIRO
@@ -95,14 +97,14 @@ int main() {
 
     //CASO SEJA MANUAL
     if(escolha2 == 1){
-        while (retorno != 1) {
+        while(retorno!= 1){
             printf("\n\n\n\n\n");
             estado(matriz, &linhas, &colunas, escolha, visitado); //GERA O ESTADO
             printMatriz(&linhas, &colunas, matriz, escolha, visitado); //PRINTA O ESTADO
             printf("\n\n\n\n\n");
             tecla = getch(); //PEGA A TECLA
-            sucessora(tecla, &pos1, &pos2, matriz, &linhas, &colunas, mov); //LE OS MOVIMENTOS
-            limpar(tecla, matriz, &pos1, &pos2, ia); //FAZ A LIMPEZA MANUAL
+            sucessora(tecla, &pos1, &pos2, matriz, &linhas, &colunas); //LE OS MOVIMENTOS
+            limpar(tecla, matriz, &pos1, &pos2); //FAZ A LIMPEZA MANUAL
             retorno = avalia(matriz, &linhas, &colunas); //FUNÇÃO OBJETIVO
             system("cls");
         }
@@ -113,13 +115,25 @@ int main() {
         if(escolha == 1){
             //OBSERVÁVEL
 
-        }else if(escolha == 2){
-            //PARCIAL A
+        }else if (escolha == 2) {
+            //PARCIALMENTE OBSERVÁVEL A
+            while(sujeira != 0){ //CASO AINDA TENHAM SUJEIRAS
+                po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //REALIZ O DFS RECURSIVAMENTE ATÉ TRAVAR EM UMA CASA OU LIMPAR TUDO
+                if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){ //SE ESTIVER TRAVADO
+                    backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //FAZ O BACKTRACKING ATÉ ONDE NECESSARIO (ATÉ NAO ESTAR MAIS PRESO)
+                }
+            }
+                system("cls");
+                 estado(matriz, &linhas, &colunas, escolha, visitado); //GERA O ESTADO
+                printMatriz(&linhas, &colunas, matriz, escolha, visitado); //PRINTA O ESTADO
+                printf("\n\n\tAinda tem Sujeira no Ambiente? Nao (Sala Limpa!) \n"); //SALA LIMPA!
+                imprimePilha(IA_A); //IMPRIME A PILHA DE MOVIMENTOS
+                libera(IA_A); //LIBERA A PILHA DA MEMÓRIA
+
         }else if(escolha == 3){
             //PARCIAL B
         }
     }
-
 
     //LIBERA A MEMÓRIA DAS CASAS VISITADAS
     freeVisitado(visitado, &linhas);
@@ -161,7 +175,6 @@ void menu_universo(int *escolha) {
     }
 }
 
-
 void menu_controladora(int *escolha) {
     int tecla = 0;
     *escolha = 1; //ATRIBUIMOS VALOR A VARIAVEL PARA O MENU COMEÇAR NA PRIMEIRA OPÇÃO
@@ -191,7 +204,6 @@ void menu_controladora(int *escolha) {
         }
     }
 }
-
 
 void tamanhoTabuleiro(int *linhas, int *colunas) {
     printf(" Informe a quantidade de linhas matriz: ");
@@ -313,18 +325,18 @@ void localizarAspirador(int **matriz, int *linhas, int *colunas, int *i, int *j)
     }
 }
 
-void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas, int mov) {
+void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *colunas) {
     int aux_i, aux_j;
     aux_i = *i;
     aux_j = *j;
 
-    if ((movimento == KEY_UP || mov == 1) && (*i) > 0) {
+    if ((movimento == KEY_UP) && (*i) > 0) {
         (*i)--;
-    } else if ((movimento == KEY_DOWN || mov == 2) && (*i) < *linhas - 1) {
+    } else if ((movimento == KEY_DOWN) && (*i) < *linhas - 1) {
         (*i)++;
-    } else if ((movimento == KEY_RIGHT || mov == 4) && (*j) < *colunas - 1) {
+    } else if ((movimento == KEY_RIGHT) && (*j) < *colunas - 1) {
         (*j)++;
-    } else if ((movimento == KEY_LEFT || mov == 3) && (*j) > 0) {
+    } else if ((movimento == KEY_LEFT) && (*j) > 0) {
         (*j)--;
     } else {
         return;
@@ -344,8 +356,8 @@ void sucessora(int movimento, int *i, int *j, int **matriz, int *linhas, int *co
 
 }
 
-void limpar(int movimento, int **matriz, int *i, int *j, int ia) {
-    if (movimento == KEY_CLEAN || ia == 1) {
+void limpar(int movimento, int **matriz, int *i, int *j) {
+    if (movimento == KEY_CLEAN) {
         if (matriz[*i][*j] == 21) {
             matriz[*i][*j] = 20;
         }
@@ -422,4 +434,103 @@ void estado(int **matriz, int *linhas, int *colunas, int escolha, int **visitado
     }
 }
 
+void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p) {
 
+    if(*suj == 0){
+        return;
+    }
+
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); //IMPORTA PARA MUDAR A COR
+
+    system("cls");
+    estado(matriz, linhas, colunas, 2, visitado); //USA O ESTADO PARA SABER ONDE É VISITADO E ONDE NÃO É
+    printMatriz(linhas, colunas, matriz, 2, visitado); //PRINTA A MATRIZ
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); //MUDA A COR PARA BRANCO
+    printf("\n\n\tAinda tem sujeira no Ambiente? SIM"); //PRINTA A QUANTIDADE DE SUJEIRAS RESTANTES
+
+    //MARCA COMO VISITADO
+    visitado[*i][*j] = 1;
+
+    //USA A FUNÇÃO LIMPAR PARA LIMPAR
+//    sleep(1);
+    if(matriz[*i][*j] == 21 || matriz[*i][*j] == 1){
+        limpar(KEY_CLEAN, matriz, i, j);
+        (*suj) --;
+    }
+    matriz[*i][*j] = 0;
+
+    //SALVA A POSIÇÃO ATUAL NA PILHA
+    push(p, *j);
+    push(p, *i);
+
+    //QND AS POS ADJ FOREM VIS == 1, ELE FAZ BACKTRACKING ATÉ ALGUMA NAO SER
+
+    //CRIA UMA LISTA DE MOVIMENTOS PRIORITÁRIOS
+    int mov_x[] = {-1, 0, 1, 0};
+    int mov_y[] = {0, -1, 0, 1};
+
+    //ATUALIZA NOVO_I E NOVO_J PARA AS POSIÇÕES SOLICITADAS
+    for (int d = 0; d < 4; d++) {
+        int novo_i = *i + mov_x[d];
+        int novo_j = *j + mov_y[d];
+
+        //VERIFICA SE A POSIÇÃO JA FOI VISITADA OU SE JA ESTA NO TABULEIRO
+        if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas && visitado[novo_i][novo_j] == 0) {
+
+            //ATUALIZA A NOVA POSIÇÃO
+            *i = novo_i;
+            *j = novo_j;
+
+            //ATUALIZA A POSIÇÃO DO ASPIRADOR
+            if(matriz[*i][*j] == 0){matriz[*i][*j] = 20;}
+            if(matriz[*i][*j] == 1){matriz[*i][*j] = 21;}
+
+            //CHAMA RECURSÃO
+            po_dfs(matriz, linhas, colunas, i, j, visitado, suj, p);
+
+        }
+    }
+}
+
+int visitados(int *i, int *j, int **visitado, int *linhas, int *colunas){
+
+    int verificador = 0; //CRIA VERIFICADOR
+    //SALVA OS MOVIMENTOS POSSIVEIS EM DOIS VETORES
+    int mov_x[] = {-1, 0, 1, 0};
+    int mov_y[] = {0, -1, 0, 1};
+
+    for (int d = 0; d < 4; d++) { //DEFINE TODAS AS MOVIMENTAÇÕES PARA NOVO I E NOVO J
+        int novo_i = *i + mov_x[d];
+        int novo_j = *j + mov_y[d];
+
+        //VERIFICA SE A POSIÇÃO JA FOI VISITADA OU SE JA ESTA NO TABULEIRO
+        if (novo_i >= 0 && novo_i < *linhas && novo_j >= 0 && novo_j < *colunas){
+            if(visitado[novo_i][novo_j] == 0){
+                return 0; //CASO TENHA UMA POSIÇÃO QUE AINDA NAO FOI VISITADA PROXIMA(NÃO É PARA TER), RETORNA 0
+            }
+        }
+    }
+    return 1; //CASO ESTEJA PRESO, RETORNA 1
+}
+
+void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p){
+
+    if (p->Topo == NULL) { //VERIFICA SE É VAZIO
+        return;
+    }
+    pop(p); //RETIRA A POSIÇÃO DA CASA I ATUAL DA PILHA
+    pop(p); //RETIRA A POSIÇÃO DA CASA J ATUAL DA PILHA
+
+    int novo_i = pop(p); //SALVA O I DO MOVIMENTO ANTERIOR COMO NOVO I E JA O APAGA DA PILHA
+    int novo_j = pop(p); //SALVA O J DO MOVIMENTO ANTERIOR COMO NOVO J E JA O APAGA DA PILHA
+
+    //ATUALIZA A NOVA POSIÇÃO
+    matriz[*i][*j] = 0;
+    *i = novo_i;
+    *j = novo_j;
+
+    //ATUALIZA A POSIÇÃO DO ASPIRADOR
+    matriz[*i][*j] = 20;
+    estado(matriz, linhas, colunas, 2, visitado);
+    printMatriz(linhas, colunas, matriz, 2, visitado);
+}
