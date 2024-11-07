@@ -890,6 +890,18 @@ void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas
          }else if ((*j - 1 >= 0) && (matriz[*i][*j - 1] == 1)){ //esquerda
             novo_j = *j - 1;
             novo_i = *i;
+         }else if((*i + 1 < *linhas) && (*j + 1 < *colunas) && matriz[*i + 1][*j + 1] == 1){ //abaixo direita
+             novo_j = *j + 1;
+             novo_i = *i;
+         }else if((*i + 1 < *linhas) && (*j - 1 >= 0) && matriz[*i + 1][*j - 1] == 1){ //abaixo esquerda
+             novo_j = *j - 1;
+             novo_i = *i;
+         }else if((*i - 1 >= 0) && (*j - 1 >= 0) && matriz[*i - 1][*j - 1] == 1){ // acima esquerda
+             novo_j = *j - 1;
+             novo_i = *i;
+         }else if((*i - 1 >= 0) && (*j + 1 < *colunas) && matriz[*i - 1][*j + 1] == 1){ // acima direita
+             novo_j = *j + 1;
+             novo_i = *i;
          }else{
             break;
          }
@@ -920,7 +932,6 @@ void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas
             }
 
             //Printa a matriz após o movimento
-            printf("movimento: sujeiras\n");
             estado(matriz, linhas, colunas, escolha, visitado, visualizado);
             printMatriz(linhas, colunas, matriz, escolha, visitado, visualizado);
             sleep(1);
@@ -958,7 +969,6 @@ void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas
             }
 
             //Printa a matriz após o movimento
-            printf("movimento: prioridade\n");
             estado(matriz, linhas, colunas, escolha, visitado, visualizado);
             printMatriz(linhas, colunas, matriz, escolha, visitado, visualizado);
             sleep(1);
@@ -972,8 +982,6 @@ void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas
 }
 
 void backtracking_B(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visitado, int *suj, Pilha *p, int **visualizado){
-
-    imprimePilha(p);
 
     if (p->Topo == NULL) { //VERIFICA SE É VAZIO
         return;
@@ -993,7 +1001,6 @@ void backtracking_B(int **matriz, int *linhas, int *colunas, int *i, int *j, int
     estado(matriz, linhas, colunas, 3, visitado, visualizado);
     printMatriz(linhas, colunas, matriz, 3, visitado, visualizado);
     sleep(1);
-//    system("cls");
 }
 
 int objetivo(int **matriz, int *linhas, int *colunas, int **visualizado){
