@@ -869,12 +869,12 @@ void backtracking_A(int **matriz, int *linhas, int *colunas, int *i, int *j, int
 
 void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas, int escolha, int **visualizado, Pilha *p) {
 
-    if(objetivo(matriz, linhas, colunas, visualizado) == 1){
-        return;
-    }
-
     int novo_i;
     int novo_j;
+
+    //Guarda a posição atual na pilha
+    push(p,*j);
+    push(p,*i);
 
     //Verifica se alguma posição adjacente tem sujeira
     while(1){
@@ -911,9 +911,13 @@ void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas
             *j = novo_j;
 
             //Guarda a posição atual na pilha
-            printf("%d%d\n\n",*i,*j);
             push(p,*j);
             push(p,*i);
+
+
+            if(objetivo(matriz, linhas, colunas, visualizado) == 1){
+                return;
+            }
 
             //Printa a matriz após o movimento
             printf("movimento: sujeiras\n");
@@ -946,13 +950,12 @@ void dfs(int **matriz, int **visitado, int *i, int *j, int *linhas, int *colunas
             }
 
             // Move o aspirador para a nova posição
-            printf("%d%d\n\n",*i,*j);
             *i = novo_i;
             *j = novo_j;
 
-            //Guarda a posição atual na pilha
-            push(p,*j);
-            push(p,*i);
+            if(objetivo(matriz, linhas, colunas, visualizado) == 1){
+                return;
+            }
 
             //Printa a matriz após o movimento
             printf("movimento: prioridade\n");
