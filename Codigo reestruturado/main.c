@@ -61,6 +61,7 @@ int main() {
     srand(time(NULL)); //PARA GERAR CASAS ALEATÓRIAS
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     int linhas = 0, colunas = 0, qtd_1, escolha, escolha2;
     int pos1, pos2;
@@ -118,17 +119,18 @@ int main() {
         }else if (escolha == 2) {
             //PARCIALMENTE OBSERVÁVEL A
             while(sujeira != 0){ //CASO AINDA TENHAM SUJEIRAS
-                po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //REALIZ O DFS RECURSIVAMENTE ATÉ TRAVAR EM UMA CASA OU LIMPAR TUDO
+                po_dfs(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //REALIZA O DFS RECURSIVAMENTE ATÉ TRAVAR EM UMA CASA OU LIMPAR TUDO
                 if(visitados(&pos1, &pos2, visitado, &linhas, &colunas) == 1){ //SE ESTIVER TRAVADO
                     backtracking_A(matriz, &linhas, &colunas, &pos1, &pos2, visitado, &sujeira, IA_A); //FAZ O BACKTRACKING ATÉ ONDE NECESSARIO (ATÉ NAO ESTAR MAIS PRESO)
                 }
             }
-                system("cls");
-                 estado(matriz, &linhas, &colunas, escolha, visitado); //GERA O ESTADO
-                printMatriz(&linhas, &colunas, matriz, escolha, visitado); //PRINTA O ESTADO
-                printf("\n\n\tAinda tem Sujeira no Ambiente? Nao (Sala Limpa!) \n"); //SALA LIMPA!
-                imprimePilha(IA_A); //IMPRIME A PILHA DE MOVIMENTOS
-                libera(IA_A); //LIBERA A PILHA DA MEMÓRIA
+            system("cls");
+            estado(matriz, &linhas, &colunas, escolha, visitado); //GERA O ESTADO
+            printMatriz(&linhas, &colunas, matriz, escolha, visitado); //PRINTA O ESTADO
+            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            printf("\n\n\tAinda tem Sujeira no Ambiente? Nao (Sala Limpa!) \n"); //SALA LIMPA!
+            imprimePilha(IA_A); //IMPRIME A PILHA DE MOVIMENTOS
+            libera(IA_A); //LIBERA A PILHA DA MEMÓRIA
 
         }else if(escolha == 3){
             //PARCIAL B
@@ -452,7 +454,7 @@ void po_dfs(int **matriz, int *linhas, int *colunas, int *i, int *j, int **visit
     visitado[*i][*j] = 1;
 
     //USA A FUNÇÃO LIMPAR PARA LIMPAR
-//    sleep(1);
+    sleep(1);
     if(matriz[*i][*j] == 21 || matriz[*i][*j] == 1){
         limpar(KEY_CLEAN, matriz, i, j);
         (*suj) --;
